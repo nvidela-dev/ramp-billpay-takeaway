@@ -16,100 +16,43 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   return (
-    <div style={{ minHeight: '100dvh', backgroundColor: '#f8fafc' }}>
-      <div
-        style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '1rem',
-          display: 'grid',
-          gap: '1rem',
-        }}
-      >
+    <div className="min-h-dvh bg-slate-50">
+      <div className="mx-auto grid max-w-[1200px] gap-4 p-4">
         <header
-          style={{
-            border: '1px solid #e2e8f0',
-            borderRadius: '0.5rem',
-            backgroundColor: '#ffffff',
-            padding: '0.75rem 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '0.75rem',
-          }}
+          className={[
+            'flex items-center justify-between gap-3 rounded-lg border border-slate-200',
+            'bg-white px-4 py-3',
+          ].join(' ')}
         >
           <Breadcrumb />
           {clerkEnabled ? (
             <UserButton />
           ) : (
-            <span style={{ color: '#475569', fontSize: '0.9rem' }}>
-              User
-            </span>
+            <span className="text-sm text-slate-600">User</span>
           )}
         </header>
 
-        <details
-          className="dashboard-mobile-menu"
-          style={{
-            border: '1px solid #e2e8f0',
-            borderRadius: '0.5rem',
-            backgroundColor: '#ffffff',
-            padding: '0.5rem 0.75rem',
-          }}
-        >
-          <summary style={{ cursor: 'pointer', fontWeight: 600 }}>
-            Menu
-          </summary>
-          <nav
-            aria-label="Mobile navigation"
-            style={{
-              marginTop: '0.5rem',
-              display: 'flex',
-              gap: '0.75rem',
-              flexWrap: 'wrap',
-            }}
-          >
+        <details className="rounded-lg border border-slate-200 bg-white px-3 py-2 md:hidden">
+          <summary className="cursor-pointer font-semibold">Menu</summary>
+          <nav aria-label="Mobile navigation" className="mt-2 flex flex-wrap gap-3">
             {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.href} href={item.href} className="text-slate-800">
                 {item.label}
               </Link>
             ))}
           </nav>
         </details>
 
-        <div
-          className="dashboard-main-grid"
-          style={{
-            display: 'grid',
-            gap: '1rem',
-            gridTemplateColumns: '220px 1fr',
-          }}
-        >
+        <div className="grid gap-4 md:grid-cols-[220px_1fr]">
           <aside
-            className="dashboard-sidebar"
-            style={{
-              border: '1px solid #e2e8f0',
-              borderRadius: '0.5rem',
-              backgroundColor: '#ffffff',
-              padding: '1rem',
-              alignSelf: 'start',
-            }}
+            className="hidden self-start rounded-lg border border-slate-200 bg-white p-4 md:block"
           >
-            <nav
-              aria-label="Sidebar navigation"
-              style={{ display: 'grid', gap: '0.5rem' }}
-            >
+            <nav aria-label="Sidebar navigation" className="grid gap-2">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  style={{
-                    borderRadius: '0.375rem',
-                    padding: '0.5rem 0.625rem',
-                    textDecoration: 'none',
-                    color: '#0f172a',
-                    backgroundColor: '#f1f5f9',
-                  }}
+                  className="rounded-md bg-slate-100 px-2.5 py-2 text-slate-900 no-underline"
                 >
                   {item.label}
                 </Link>
@@ -117,41 +60,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </nav>
           </aside>
 
-          <section
-            style={{
-              border: '1px solid #e2e8f0',
-              borderRadius: '0.5rem',
-              backgroundColor: '#ffffff',
-              padding: '1rem',
-              minHeight: '420px',
-            }}
-          >
+          <section className="min-h-[420px] rounded-lg border border-slate-200 bg-white p-4">
             {children}
           </section>
         </div>
       </div>
-
-      <style>
-        {`
-          .dashboard-mobile-menu {
-            display: none;
-          }
-
-          @media (max-width: 900px) {
-            .dashboard-mobile-menu {
-              display: block;
-            }
-
-            .dashboard-sidebar {
-              display: none;
-            }
-
-            .dashboard-main-grid {
-              grid-template-columns: 1fr;
-            }
-          }
-        `}
-      </style>
     </div>
   );
 }

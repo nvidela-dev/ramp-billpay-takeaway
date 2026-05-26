@@ -6,18 +6,11 @@ export default function SignInPage() {
   const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   return (
-    <main
-      style={{
-        minHeight: '100dvh',
-        display: 'grid',
-        placeItems: 'center',
-        padding: '2rem 1rem',
-      }}
-    >
+    <main className="grid min-h-dvh place-items-center px-4 py-8">
       {clerkEnabled ? (
         <SignIn />
       ) : (
-        <p style={{ color: '#475569', textAlign: 'center' }}>
+        <p className="text-center text-slate-600">
           Clerk is not configured. Set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` to enable sign-in.
         </p>
       )}

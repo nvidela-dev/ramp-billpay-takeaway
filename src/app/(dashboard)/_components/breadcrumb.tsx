@@ -14,9 +14,9 @@ export function Breadcrumb() {
   const label = segment ? LABELS[segment] ?? segment : 'Dashboard';
 
   return (
-    <nav aria-label="Breadcrumb" style={{ color: '#334155', fontSize: '0.9rem' }}>
+    <nav aria-label="Breadcrumb" className="text-sm text-slate-700">
       <span>Dashboard /</span>
-      <span style={{ marginLeft: '0.25rem' }}>{label}</span>
+      <span className="ml-1">{label}</span>
     </nav>
   );
 }
