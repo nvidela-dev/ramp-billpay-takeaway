@@ -28,6 +28,7 @@ yarn db:push
 ## Deploy to Vercel (Neon + Clerk)
 
 1. Create a Neon Postgres project and copy the pooled connection string into `DATABASE_URL`.
+   Example format: `postgresql://neondb_owner:<password>@ep-example-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
 2. In Clerk, create a Next.js application and copy:
    - `CLERK_SECRET_KEY`
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
