@@ -45,6 +45,7 @@ yarn db:push
    - or CI/release job: `yarn db:migrate`
 6. Deploy to Vercel and verify:
    - `/sign-in` renders Clerk sign-in
+   - `/api/health/db` returns `{ "ok": true }`
    - protected routes redirect unauthenticated users once the dashboard shell is merged
    - webhook delivery succeeds in Clerk dashboard logs
 
