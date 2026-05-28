@@ -1,2 +1,4 @@
-// Read-model query helpers land with data-backed feature PRs.
-export {};
+export {
+  getBillFormOptions,
+  listDraftBills,
+} from '@/lib/repositories/bill.repo';
