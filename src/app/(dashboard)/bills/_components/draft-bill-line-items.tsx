@@ -9,13 +9,13 @@ import type {
 } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
+import type { DraftBillFormInput } from '@/lib/validators/bill.schemas';
 import type { BillFormOptions } from '@/types';
 
-import type { DraftBillFormValues } from './draft-bill-form-model';
 import { DraftBillLineItemRow } from './draft-bill-line-item-row';
 
 type DraftBillLineItemField = UseFieldArrayReturn<
-  DraftBillFormValues,
+  DraftBillFormInput,
   'lineItems'
 >['fields'][number];
 
@@ -24,7 +24,7 @@ interface DraftBillLineItemsProps {
   fields: DraftBillLineItemField[];
   onAppendLineItem: () => void;
   onRemoveLineItem: (index: number) => void;
-  register: UseFormRegister<DraftBillFormValues>;
+  register: UseFormRegister<DraftBillFormInput>;
 }
 
 export function DraftBillLineItems({

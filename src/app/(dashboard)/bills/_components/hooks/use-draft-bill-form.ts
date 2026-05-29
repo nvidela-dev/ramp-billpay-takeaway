@@ -12,32 +12,70 @@ import {
   useWatch,
 } from 'react-hook-form';
 
-import { createBillSchema } from '@/lib/validators/bill.schemas';
+import {
+  draftBillFormSchema,
+  type DraftBillFormInput,
+  type DraftBillFormValues,
+} from '@/lib/validators/bill.schemas';
 import { sumMoneyStrings } from '@/lib/validators/shared';
 import type {
   CreateBillInput,
   DraftBillListItem,
 } from '@/types';
 
-import {
-  createDefaultDraftBillFormValues,
-  draftBillToFormValues,
-  emptyDraftBillLineItem,
-  normalizeDraftBillFormValues,
-  type DraftBillFormValues,
-} from '../draft-bill-form-model';
-
 interface UseDraftBillFormOptions {
   editingBill: DraftBillListItem | null;
   onSubmit: (input: CreateBillInput) => void;
+}
+
+const emptyDraftBillLineItem: DraftBillFormInput['lineItems'][number] = {
+  description: '',
+  amount: '0.00',
+  categoryId: '',
+};
+
+function createDefaultDraftBillFormValues(): DraftBillFormInput {
+  return {
+    vendorId: '',
+    invoiceNumber: '',
+    invoiceDate: '',
+    dueDate: '',
+    amount: '0.00',
+    currency: 'USD',
+    description: '',
+    invoiceUrl: '',
+    lineItems: [{ ...emptyDraftBillLineItem }],
+  };
+}
+
+function draftBillToFormValues(bill: DraftBillListItem): DraftBillFormInput {
+  const lineItems = bill.lineItems.length > 0
+    ? bill.lineItems.map((lineItem) => ({
+      description: lineItem.description ?? '',
+      amount: lineItem.amount,
+      categoryId: lineItem.categoryId ?? '',
+    }))
+    : [{ ...emptyDraftBillLineItem }];
+
+  return {
+    vendorId: bill.vendorId,
+    invoiceNumber: bill.invoiceNumber ?? '',
+    invoiceDate: bill.invoiceDate ?? '',
+    dueDate: bill.dueDate ?? '',
+    amount: bill.amount,
+    currency: bill.currency,
+    description: bill.description ?? '',
+    invoiceUrl: bill.invoiceUrl ?? '',
+    lineItems,
+  };
 }
 
 export function useDraftBillForm({
   editingBill,
   onSubmit,
 }: UseDraftBillFormOptions) {
-  const form = useForm<DraftBillFormValues>({
-    resolver: zodResolver(createBillSchema),
+  const form = useForm<DraftBillFormInput, unknown, DraftBillFormValues>({
+    resolver: zodResolver(draftBillFormSchema),
     defaultValues: createDefaultDraftBillFormValues(),
   });
   const {
@@ -91,7 +129,7 @@ export function useDraftBillForm({
   }, [remove]);
 
   const submitDraftBill = useCallback((values: DraftBillFormValues) => {
-    onSubmit(normalizeDraftBillFormValues(values));
+    onSubmit(values);
   }, [onSubmit]);
 
   return {
