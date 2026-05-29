@@ -2,11 +2,15 @@
 
 import { useRouter } from 'next/navigation';
 import {
+  X,
+} from 'lucide-react';
+import {
   useCallback,
   useState,
   useTransition,
 } from 'react';
 
+import { Button } from '@/components/ui/button';
 import { createBill } from '@/lib/actions/bills/create-bill';
 import { deleteBill } from '@/lib/actions/bills/delete-bill';
 import { updateBill } from '@/lib/actions/bills/update-bill';
@@ -99,15 +103,40 @@ export function DraftBillsView({ bills, loadError, options }: DraftBillsViewProp
   return (
     <div className="grid gap-5">
       {isFormOpen ? (
-        <DraftBillForm
-          editingBill={editingBill}
-          formError={formError}
-          isPending={isPending}
-          loadError={loadError}
-          onCancelEdit={cancelEdit}
-          onSubmit={onSubmit}
-          options={options}
-        />
+        <div
+          className={[
+            'fixed inset-0 z-50 grid place-items-center bg-slate-950/50',
+            'p-3 sm:p-6',
+          ].join(' ')}
+          role="dialog"
+          aria-modal
+          aria-label={editingBill ? 'Edit bill' : 'New bill'}
+        >
+          <div className="w-full max-w-5xl rounded-md border border-slate-200 bg-white shadow-2xl">
+            <div className="flex justify-end px-4 pt-4">
+              <Button
+                aria-label="Close bill form"
+                onClick={cancelEdit}
+                size="icon"
+                type="button"
+                variant="ghost"
+              >
+                <X aria-hidden className="size-4" />
+              </Button>
+            </div>
+            <div className="max-h-[85dvh] overflow-y-auto px-4 pb-4 sm:px-5 sm:pb-5">
+              <DraftBillForm
+                editingBill={editingBill}
+                formError={formError}
+                isPending={isPending}
+                loadError={loadError}
+                onCancelEdit={cancelEdit}
+                onSubmit={onSubmit}
+                options={options}
+              />
+            </div>
+          </div>
+        </div>
       ) : null}
       {!isFormOpen && formError ? (
         <div

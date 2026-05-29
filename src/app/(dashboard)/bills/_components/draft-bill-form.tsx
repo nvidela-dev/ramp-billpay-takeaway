@@ -4,13 +4,6 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { formatMoney } from '@/lib/utils';
 import type {
   BillFormOptions,
@@ -57,181 +50,179 @@ export function DraftBillForm({
   } = useDraftBillForm({ editingBill, onSubmit });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{editingBill ? 'Edit bill' : 'New bill'}</CardTitle>
-        <CardDescription>
+    <div className="grid gap-4">
+      <div>
+        <h2 className="text-xl font-semibold text-slate-950">
+          {editingBill ? 'Edit bill' : 'New bill'}
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
           Save bill details and line items before approval.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {loadError ? (
-          <div
-            className={[
-              'rounded-md border border-rose-200 bg-rose-50 p-4',
-              'text-sm text-rose-950',
-            ].join(' ')}
-          >
-            {loadError}
-          </div>
-        ) : null}
-        {!loadError && formDisabled ? (
-          <div
-            className={[
-              'rounded-md border border-amber-200 bg-amber-50 p-4',
-              'text-sm text-amber-950',
-            ].join(' ')}
-          >
-            Seed vendors and categories before creating draft bills.
-          </div>
-        ) : null}
-        {!loadError && !formDisabled ? (
-          <form className="grid gap-4" onSubmit={handleSubmit(submitDraftBill)}>
-            <div className="grid gap-3 md:grid-cols-3">
-              <label
-                className="grid gap-1 text-sm font-medium text-slate-700"
-                htmlFor="bill-vendor"
-              >
-                Vendor
-                <select
-                  className="h-10 rounded-md border border-slate-300 px-3 text-sm"
-                  id="bill-vendor"
-                  {...register('vendorId')}
-                >
-                  <option value="">Select vendor</option>
-                  {options.vendors.map((vendor) => (
-                    <option key={vendor.id} value={vendor.id}>
-                      {vendor.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label
-                className="grid gap-1 text-sm font-medium text-slate-700"
-                htmlFor="bill-invoice-number"
-              >
-                Invoice #
-                <input
-                  className="h-10 rounded-md border border-slate-300 px-3 text-sm"
-                  id="bill-invoice-number"
-                  {...register('invoiceNumber')}
-                />
-              </label>
-              <label
-                className="grid gap-1 text-sm font-medium text-slate-700"
-                htmlFor="bill-amount"
-              >
-                Amount
-                <input
-                  className="h-10 rounded-md border border-slate-300 px-3 text-sm"
-                  id="bill-amount"
-                  inputMode="decimal"
-                  {...register('amount')}
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-4">
-              <label
-                className="grid gap-1 text-sm font-medium text-slate-700"
-                htmlFor="bill-currency"
-              >
-                Currency
-                <input
-                  className="h-10 rounded-md border border-slate-300 px-3 text-sm uppercase"
-                  id="bill-currency"
-                  maxLength={3}
-                  {...register('currency')}
-                />
-              </label>
-              <label
-                className="grid gap-1 text-sm font-medium text-slate-700"
-                htmlFor="bill-invoice-date"
-              >
-                Invoice date
-                <input
-                  className="h-10 rounded-md border border-slate-300 px-3 text-sm"
-                  id="bill-invoice-date"
-                  type="date"
-                  {...register('invoiceDate')}
-                />
-              </label>
-              <label
-                className="grid gap-1 text-sm font-medium text-slate-700"
-                htmlFor="bill-due-date"
-              >
-                Due date
-                <input
-                  className="h-10 rounded-md border border-slate-300 px-3 text-sm"
-                  id="bill-due-date"
-                  type="date"
-                  {...register('dueDate')}
-                />
-              </label>
-              <label
-                className="grid gap-1 text-sm font-medium text-slate-700"
-                htmlFor="bill-invoice-url"
-              >
-                Invoice URL
-                <input
-                  className="h-10 rounded-md border border-slate-300 px-3 text-sm"
-                  id="bill-invoice-url"
-                  type="url"
-                  {...register('invoiceUrl')}
-                />
-              </label>
-            </div>
-
+        </p>
+      </div>
+      {loadError ? (
+        <div
+          className={[
+            'rounded-md border border-rose-200 bg-rose-50 p-4',
+            'text-sm text-rose-950',
+          ].join(' ')}
+        >
+          {loadError}
+        </div>
+      ) : null}
+      {!loadError && formDisabled ? (
+        <div
+          className={[
+            'rounded-md border border-amber-200 bg-amber-50 p-4',
+            'text-sm text-amber-950',
+          ].join(' ')}
+        >
+          Seed vendors and categories before creating draft bills.
+        </div>
+      ) : null}
+      {!loadError && !formDisabled ? (
+        <form className="grid gap-4" onSubmit={handleSubmit(submitDraftBill)}>
+          <div className="grid gap-3 md:grid-cols-3">
             <label
               className="grid gap-1 text-sm font-medium text-slate-700"
-              htmlFor="bill-description"
+              htmlFor="bill-vendor"
             >
-              Description
-              <textarea
-                className="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm"
-                id="bill-description"
-                {...register('description')}
+              Vendor
+              <select
+                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
+                id="bill-vendor"
+                {...register('vendorId')}
+              >
+                <option value="">Select vendor</option>
+                {options.vendors.map((vendor) => (
+                  <option key={vendor.id} value={vendor.id}>
+                    {vendor.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label
+              className="grid gap-1 text-sm font-medium text-slate-700"
+              htmlFor="bill-invoice-number"
+            >
+              Invoice #
+              <input
+                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
+                id="bill-invoice-number"
+                {...register('invoiceNumber')}
               />
             </label>
+            <label
+              className="grid gap-1 text-sm font-medium text-slate-700"
+              htmlFor="bill-amount"
+            >
+              Amount
+              <input
+                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
+                id="bill-amount"
+                inputMode="decimal"
+                {...register('amount')}
+              />
+            </label>
+          </div>
 
-            <DraftBillLineItems
-              categories={options.categories}
-              fields={fields}
-              onAppendLineItem={appendLineItem}
-              onRemoveLineItem={removeLineItem}
-              register={register}
+          <div className="grid gap-3 md:grid-cols-4">
+            <label
+              className="grid gap-1 text-sm font-medium text-slate-700"
+              htmlFor="bill-currency"
+            >
+              Currency
+              <input
+                className="h-10 rounded-md border border-slate-300 px-3 text-sm uppercase"
+                id="bill-currency"
+                maxLength={3}
+                {...register('currency')}
+              />
+            </label>
+            <label
+              className="grid gap-1 text-sm font-medium text-slate-700"
+              htmlFor="bill-invoice-date"
+            >
+              Invoice date
+              <input
+                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
+                id="bill-invoice-date"
+                type="date"
+                {...register('invoiceDate')}
+              />
+            </label>
+            <label
+              className="grid gap-1 text-sm font-medium text-slate-700"
+              htmlFor="bill-due-date"
+            >
+              Due date
+              <input
+                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
+                id="bill-due-date"
+                type="date"
+                {...register('dueDate')}
+              />
+            </label>
+            <label
+              className="grid gap-1 text-sm font-medium text-slate-700"
+              htmlFor="bill-invoice-url"
+            >
+              Invoice URL
+              <input
+                className="h-10 rounded-md border border-slate-300 px-3 text-sm"
+                id="bill-invoice-url"
+                type="url"
+                {...register('invoiceUrl')}
+              />
+            </label>
+          </div>
+
+          <label
+            className="grid gap-1 text-sm font-medium text-slate-700"
+            htmlFor="bill-description"
+          >
+            Description
+            <textarea
+              className="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm"
+              id="bill-description"
+              {...register('description')}
             />
+          </label>
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p
-                className={
-                  totalsMatch ? 'text-sm text-emerald-700' : 'text-sm text-rose-700'
-                }
-              >
-                Lines total
-                {' '}
-                {formatMoney(lineItemTotal.toFixed(2), currency)}
-              </p>
-              <div className="flex gap-2">
-                {editingBill ? (
-                  <Button onClick={onCancelEdit} type="button" variant="ghost">
-                    <X aria-hidden className="size-4" />
-                    Cancel
-                  </Button>
-                ) : null}
-                <Button disabled={isPending || !totalsMatch} type="submit">
-                  <Save aria-hidden className="size-4" />
-                  {editingBill ? 'Save bill' : 'Create bill'}
-                </Button>
-              </div>
+          <DraftBillLineItems
+            categories={options.categories}
+            fields={fields}
+            onAppendLineItem={appendLineItem}
+            onRemoveLineItem={removeLineItem}
+            register={register}
+          />
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p
+              className={
+                totalsMatch ? 'text-sm text-emerald-700' : 'text-sm text-rose-700'
+              }
+            >
+              Lines total
+              {' '}
+              {formatMoney(lineItemTotal.toFixed(2), currency)}
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={onCancelEdit} type="button" variant="ghost">
+                <X aria-hidden className="size-4" />
+                Cancel
+              </Button>
+              <Button disabled={isPending || !totalsMatch} type="submit">
+                <Save aria-hidden className="size-4" />
+                {editingBill ? 'Save bill' : 'Create bill'}
+              </Button>
             </div>
+          </div>
 
-            {formError ? (
-              <p className="text-sm text-rose-700">{formError}</p>
-            ) : null}
-          </form>
-        ) : null}
-      </CardContent>
-    </Card>
+          {formError ? (
+            <p className="text-sm text-rose-700">{formError}</p>
+          ) : null}
+        </form>
+      ) : null}
+    </div>
   );
 }
