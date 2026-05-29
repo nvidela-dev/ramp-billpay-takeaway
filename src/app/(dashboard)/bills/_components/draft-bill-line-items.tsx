@@ -2,9 +2,7 @@
 
 import {
   Plus,
-  Trash2,
 } from 'lucide-react';
-import { useCallback } from 'react';
 import type {
   UseFieldArrayReturn,
   UseFormRegister,
@@ -14,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import type { BillFormOptions } from '@/types';
 
 import type { DraftBillFormValues } from './draft-bill-form-model';
+import { DraftBillLineItemRow } from './draft-bill-line-item-row';
 
 type DraftBillLineItemField = UseFieldArrayReturn<
   DraftBillFormValues,
@@ -26,73 +25,6 @@ interface DraftBillLineItemsProps {
   onAppendLineItem: () => void;
   onRemoveLineItem: (index: number) => void;
   register: UseFormRegister<DraftBillFormValues>;
-}
-
-interface DraftBillLineItemRowProps {
-  categories: BillFormOptions['categories'];
-  field: DraftBillLineItemField;
-  index: number;
-  isOnlyLineItem: boolean;
-  onRemoveLineItem: (index: number) => void;
-  register: UseFormRegister<DraftBillFormValues>;
-}
-
-function DraftBillLineItemRow({
-  categories,
-  field,
-  index,
-  isOnlyLineItem,
-  onRemoveLineItem,
-  register,
-}: DraftBillLineItemRowProps) {
-  const removeLineItem = useCallback(() => {
-    onRemoveLineItem(index);
-  }, [index, onRemoveLineItem]);
-
-  return (
-    <div
-      className="grid gap-2 rounded-md border border-slate-200 p-3"
-      key={field.id}
-    >
-      <div className="grid gap-2 md:grid-cols-[1fr_140px_180px_auto]">
-        <input
-          aria-label={`Line ${index + 1} description`}
-          className="h-10 rounded-md border border-slate-300 px-3 text-sm"
-          placeholder="Description"
-          {...register(`lineItems.${index}.description`)}
-        />
-        <input
-          aria-label={`Line ${index + 1} amount`}
-          className="h-10 rounded-md border border-slate-300 px-3 text-sm"
-          inputMode="decimal"
-          placeholder="0.00"
-          {...register(`lineItems.${index}.amount`)}
-        />
-        <select
-          aria-label={`Line ${index + 1} category`}
-          className="h-10 rounded-md border border-slate-300 px-3 text-sm"
-          {...register(`lineItems.${index}.categoryId`)}
-        >
-          <option value="">Category</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <Button
-          aria-label={`Remove line ${index + 1}`}
-          disabled={isOnlyLineItem}
-          onClick={removeLineItem}
-          size="icon"
-          type="button"
-          variant="ghost"
-        >
-          <Trash2 aria-hidden className="size-4" />
-        </Button>
-      </div>
-    </div>
-  );
 }
 
 export function DraftBillLineItems({
@@ -120,7 +52,7 @@ export function DraftBillLineItems({
       {fields.map((field, index) => (
         <DraftBillLineItemRow
           categories={categories}
-          field={field}
+          fieldId={field.id}
           index={index}
           isOnlyLineItem={fields.length === 1}
           key={field.id}

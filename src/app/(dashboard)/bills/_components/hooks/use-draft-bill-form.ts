@@ -25,7 +25,7 @@ import {
   emptyDraftBillLineItem,
   normalizeDraftBillFormValues,
   type DraftBillFormValues,
-} from './draft-bill-form-model';
+} from '../draft-bill-form-model';
 
 interface UseDraftBillFormOptions {
   editingBill: DraftBillListItem | null;
