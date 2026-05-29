@@ -80,6 +80,10 @@ const [owner] = await sql`
   limit 1
 `;
 
+// Local-dev convenience: promote the earliest user to admin only when no
+// privileged user exists yet. Production sign-up has its own atomic
+// bootstrap in lib/auth/user-sync; this branch is here so `yarn db:seed`
+// can produce a usable workspace without a manual SQL step.
 if (owner) {
   await sql`
     update users

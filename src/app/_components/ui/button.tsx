@@ -57,8 +57,4 @@ export function Button({
   );
 }
 
-Button.defaultProps = {
-  asChild: false,
-};
-
 export { buttonVariants };

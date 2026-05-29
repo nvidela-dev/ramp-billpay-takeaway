@@ -7,6 +7,10 @@ import {
 } from 'lucide-react';
 import {
   useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
   useState,
   useTransition,
 } from 'react';
@@ -29,7 +33,7 @@ import type {
 import { BillsFilteredView } from './bills-filtered-view';
 import { BillsStatusOverview } from './bills-status-overview';
 import { DraftBillForm } from './draft-bill-form';
-import { DraftBillsView } from './draft-bills-view';
+import { DraftBillsTable } from './draft-bills-table';
 
 interface BillsWorkspaceProps {
   activeTab: string;
@@ -38,6 +42,15 @@ interface BillsWorkspaceProps {
   options: BillFormOptions;
 }
 
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
 export function BillsWorkspace({
   activeTab,
   bills,
@@ -45,25 +58,35 @@ export function BillsWorkspace({
   options,
 }: BillsWorkspaceProps) {
   const router = useRouter();
-  const [editingBill, setEditingBill] = useState<DraftBillListItem | null>(null);
+  const dialogTitleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const [editingBillId, setEditingBillId] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // Re-derive editingBill from the refreshed list so optimistic-concurrency
+  // tokens (updatedAt) stay current after router.refresh().
+  const editingBill = useMemo(
+    () => (editingBillId ? bills.find((bill) => bill.id === editingBillId) ?? null : null),
+    [bills, editingBillId],
+  );
+
   const closeForm = useCallback(() => {
-    setEditingBill(null);
+    setEditingBillId(null);
     setIsFormOpen(false);
+    setFormError(null);
   }, []);
 
   const openCreateForm = useCallback(() => {
-    setEditingBill(null);
+    setEditingBillId(null);
     setFormError(null);
     setIsFormOpen(true);
   }, []);
 
   const selectBillForEdit = useCallback((bill: DraftBillListItem) => {
-    setEditingBill(bill);
+    setEditingBillId(bill.id);
     setFormError(null);
     setIsFormOpen(true);
   }, []);
@@ -106,14 +129,73 @@ export function BillsWorkspace({
         return;
       }
 
-      if (editingBill?.id === id) {
+      if (editingBillId === id) {
         closeForm();
       }
 
       setDeleteCandidateId(null);
       router.refresh();
     });
-  }, [closeForm, editingBill?.id, router, startTransition]);
+  }, [closeForm, editingBillId, router, startTransition]);
+
+  useEffect(() => {
+    if (!isFormOpen) {
+      return undefined;
+    }
+
+    const { activeElement } = document;
+    const previouslyFocused = activeElement instanceof HTMLElement ? activeElement : null;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const dialogNode = dialogRef.current;
+    const focusFirst = () => {
+      if (!dialogNode) {
+        return;
+      }
+      const focusables = dialogNode.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      const target = focusables[0] ?? dialogNode;
+      target.focus();
+    };
+    focusFirst();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        closeForm();
+        return;
+      }
+      if (event.key !== 'Tab' || !dialogNode) {
+        return;
+      }
+      const focusables = Array.from(
+        dialogNode.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((element) => !element.hasAttribute('disabled'));
+      if (focusables.length === 0) {
+        event.preventDefault();
+        dialogNode.focus();
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const current = document.activeElement;
+      if (event.shiftKey && current === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && current === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+      previouslyFocused?.focus?.();
+    };
+  }, [closeForm, isFormOpen]);
 
   return (
     <main className="grid gap-6">
@@ -137,7 +219,9 @@ export function BillsWorkspace({
           ].join(' ')}
           role="dialog"
           aria-modal
-          aria-label={editingBill ? 'Edit bill' : 'New bill'}
+          aria-labelledby={dialogTitleId}
+          ref={dialogRef}
+          tabIndex={-1}
         >
           <div className="w-full max-w-5xl rounded-md border border-slate-200 bg-white shadow-2xl">
             <div className="flex justify-end px-4 pt-4">
@@ -152,6 +236,9 @@ export function BillsWorkspace({
               </Button>
             </div>
             <div className="max-h-[85dvh] overflow-y-auto px-4 pb-4 sm:px-5 sm:pb-5">
+              <h2 className="sr-only" id={dialogTitleId}>
+                {editingBill ? 'Edit bill' : 'New bill'}
+              </h2>
               <DraftBillForm
                 editingBill={editingBill}
                 formError={formError}
@@ -172,6 +259,7 @@ export function BillsWorkspace({
             'rounded-md border border-rose-200 bg-rose-50 p-4',
             'text-sm text-rose-950',
           ].join(' ')}
+          role="alert"
         >
           {formError}
         </div>
@@ -181,7 +269,7 @@ export function BillsWorkspace({
         <BillsStatusOverview draftBills={bills} />
       ) : null}
       {activeTab === 'drafts' ? (
-        <DraftBillsView
+        <DraftBillsTable
           bills={bills}
           deleteCandidateId={deleteCandidateId}
           isLoading={isPending}

@@ -11,10 +11,10 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({
-  actions,
-  className,
-  description,
-  eyebrow,
+  actions = undefined,
+  className = undefined,
+  description = undefined,
+  eyebrow = undefined,
   title,
 }: PageHeaderProps) {
   return (
@@ -45,10 +45,3 @@ export function PageHeader({
     </header>
   );
 }
-
-PageHeader.defaultProps = {
-  actions: undefined,
-  className: undefined,
-  description: undefined,
-  eyebrow: undefined,
-};

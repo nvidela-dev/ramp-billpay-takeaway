@@ -1,9 +1,8 @@
 'use client';
 
-import {
-  Plus,
-} from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type {
+  FieldErrors,
   UseFieldArrayReturn,
   UseFormRegister,
 } from 'react-hook-form';
@@ -21,6 +20,7 @@ type DraftBillLineItemField = UseFieldArrayReturn<
 
 interface DraftBillLineItemsProps {
   categories: BillFormOptions['categories'];
+  errors?: FieldErrors<DraftBillFormInput>['lineItems'];
   fields: DraftBillLineItemField[];
   onAppendLineItem: () => void;
   onRemoveLineItem: (index: number) => void;
@@ -29,6 +29,7 @@ interface DraftBillLineItemsProps {
 
 export function DraftBillLineItems({
   categories,
+  errors = undefined,
   fields,
   onAppendLineItem,
   onRemoveLineItem,
@@ -52,6 +53,7 @@ export function DraftBillLineItems({
       {fields.map((field, index) => (
         <DraftBillLineItemRow
           categories={categories}
+          errors={Array.isArray(errors) ? errors[index] : undefined}
           fieldId={field.id}
           index={index}
           isOnlyLineItem={fields.length === 1}

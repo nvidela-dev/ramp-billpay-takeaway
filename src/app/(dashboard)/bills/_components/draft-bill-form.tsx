@@ -24,6 +24,17 @@ interface DraftBillFormProps {
   options: BillFormOptions;
 }
 
+function FieldError({ message = undefined }: { message?: string }) {
+  if (!message) {
+    return null;
+  }
+  return (
+    <p className="text-xs font-normal text-rose-700" role="alert">
+      {message}
+    </p>
+  );
+}
+
 export function DraftBillForm({
   editingBill,
   formError,
@@ -39,9 +50,11 @@ export function DraftBillForm({
 
   const {
     fields,
+    formState,
     handleSubmit,
     lineItemTotal,
     register,
+    registerCurrency,
     appendLineItem,
     removeLineItem,
     submitDraftBill,
@@ -49,10 +62,15 @@ export function DraftBillForm({
     currency,
   } = useDraftBillForm({ editingBill, onSubmit });
 
+  const { errors } = formState;
+  const lineItemsRootError = typeof errors.lineItems?.message === 'string'
+    ? errors.lineItems.message
+    : undefined;
+
   return (
     <div className="grid gap-4">
       <div>
-        <h2 className="text-xl font-semibold text-slate-950">
+        <h2 className="text-xl font-semibold text-slate-950" id="draft-bill-form-title">
           {editingBill ? 'Edit bill' : 'New bill'}
         </h2>
         <p className="mt-1 text-sm text-slate-500">
@@ -80,7 +98,11 @@ export function DraftBillForm({
         </div>
       ) : null}
       {!loadError && !formDisabled ? (
-        <form className="grid gap-4" onSubmit={handleSubmit(submitDraftBill)}>
+        <form
+          className="grid gap-4"
+          noValidate
+          onSubmit={handleSubmit(submitDraftBill)}
+        >
           <div className="grid gap-3 md:grid-cols-3">
             <label
               className="grid gap-1 text-sm font-medium text-slate-700"
@@ -88,6 +110,7 @@ export function DraftBillForm({
             >
               Vendor
               <select
+                aria-invalid={errors.vendorId ? true : undefined}
                 className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-vendor"
                 {...register('vendorId')}
@@ -99,6 +122,7 @@ export function DraftBillForm({
                   </option>
                 ))}
               </select>
+              <FieldError message={errors.vendorId?.message} />
             </label>
             <label
               className="grid gap-1 text-sm font-medium text-slate-700"
@@ -106,10 +130,12 @@ export function DraftBillForm({
             >
               Invoice #
               <input
+                aria-invalid={errors.invoiceNumber ? true : undefined}
                 className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-invoice-number"
                 {...register('invoiceNumber')}
               />
+              <FieldError message={errors.invoiceNumber?.message} />
             </label>
             <label
               className="grid gap-1 text-sm font-medium text-slate-700"
@@ -117,11 +143,13 @@ export function DraftBillForm({
             >
               Amount
               <input
+                aria-invalid={errors.amount ? true : undefined}
                 className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-amount"
                 inputMode="decimal"
                 {...register('amount')}
               />
+              <FieldError message={errors.amount?.message} />
             </label>
           </div>
 
@@ -132,11 +160,13 @@ export function DraftBillForm({
             >
               Currency
               <input
+                aria-invalid={errors.currency ? true : undefined}
                 className="h-10 rounded-md border border-slate-300 px-3 text-sm uppercase"
                 id="bill-currency"
                 maxLength={3}
-                {...register('currency')}
+                {...registerCurrency()}
               />
+              <FieldError message={errors.currency?.message} />
             </label>
             <label
               className="grid gap-1 text-sm font-medium text-slate-700"
@@ -144,11 +174,13 @@ export function DraftBillForm({
             >
               Invoice date
               <input
+                aria-invalid={errors.invoiceDate ? true : undefined}
                 className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-invoice-date"
                 type="date"
                 {...register('invoiceDate')}
               />
+              <FieldError message={errors.invoiceDate?.message} />
             </label>
             <label
               className="grid gap-1 text-sm font-medium text-slate-700"
@@ -156,11 +188,13 @@ export function DraftBillForm({
             >
               Due date
               <input
+                aria-invalid={errors.dueDate ? true : undefined}
                 className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-due-date"
                 type="date"
                 {...register('dueDate')}
               />
+              <FieldError message={errors.dueDate?.message} />
             </label>
             <label
               className="grid gap-1 text-sm font-medium text-slate-700"
@@ -168,11 +202,13 @@ export function DraftBillForm({
             >
               Invoice URL
               <input
+                aria-invalid={errors.invoiceUrl ? true : undefined}
                 className="h-10 rounded-md border border-slate-300 px-3 text-sm"
                 id="bill-invoice-url"
                 type="url"
                 {...register('invoiceUrl')}
               />
+              <FieldError message={errors.invoiceUrl?.message} />
             </label>
           </div>
 
@@ -182,19 +218,23 @@ export function DraftBillForm({
           >
             Description
             <textarea
+              aria-invalid={errors.description ? true : undefined}
               className="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm"
               id="bill-description"
               {...register('description')}
             />
+            <FieldError message={errors.description?.message} />
           </label>
 
           <DraftBillLineItems
             categories={options.categories}
+            errors={errors.lineItems}
             fields={fields}
             onAppendLineItem={appendLineItem}
             onRemoveLineItem={removeLineItem}
             register={register}
           />
+          {lineItemsRootError ? <FieldError message={lineItemsRootError} /> : null}
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p
@@ -219,7 +259,7 @@ export function DraftBillForm({
           </div>
 
           {formError ? (
-            <p className="text-sm text-rose-700">{formError}</p>
+            <p className="text-sm text-rose-700" role="alert">{formError}</p>
           ) : null}
         </form>
       ) : null}

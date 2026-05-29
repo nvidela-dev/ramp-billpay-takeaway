@@ -8,7 +8,7 @@ interface EmptyStateProps {
   action?: ReactNode;
 }
 
-export function EmptyState({ action, description, title }: EmptyStateProps) {
+export function EmptyState({ action = undefined, description, title }: EmptyStateProps) {
   return (
     <Card className="border-dashed">
       <CardContent className="grid min-h-40 place-items-center text-center">
@@ -25,7 +25,3 @@ export function EmptyState({ action, description, title }: EmptyStateProps) {
     </Card>
   );
 }
-
-EmptyState.defaultProps = {
-  action: undefined,
-};

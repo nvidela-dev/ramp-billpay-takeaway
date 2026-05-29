@@ -7,11 +7,6 @@ export interface NavigationItem {
   icon?: 'receipt' | 'credit-card' | 'building';
 }
 
-export interface BreadcrumbItem {
-  label: string;
-  href?: string;
-}
-
 export interface SurfaceTab {
   value: string;
   label: string;

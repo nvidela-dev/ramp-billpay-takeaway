@@ -44,6 +44,12 @@ const eslintConfig = defineConfig([
       // Tests use `void identifier` to silence unused-binding warnings while
       // still exercising a destructure pattern.
       'no-void': ['error', { allowAsStatement: true }],
+      // `defaultProps` on function components is deprecated in React 18.3+.
+      // Allow ES default-argument destructuring instead.
+      'react/require-default-props': [
+        'error',
+        { functions: 'defaultArguments', forbidDefaultForRequired: true },
+      ],
     },
   },
 

@@ -33,8 +33,3 @@ export function ActionToolbar({ actions = [], bulkActions = [] }: ActionToolbarP
     </div>
   );
 }
-
-ActionToolbar.defaultProps = {
-  actions: [],
-  bulkActions: [],
-};

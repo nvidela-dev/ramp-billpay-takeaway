@@ -17,7 +17,10 @@ import {
   type DraftBillFormInput,
   type DraftBillFormValues,
 } from '@/lib/validators/bill.schemas';
-import { sumMoneyStrings } from '@/lib/validators/shared';
+import {
+  positiveMoneyStringSchema,
+  sumMoneyStrings,
+} from '@/lib/validators/shared';
 import type {
   CreateBillInput,
   DraftBillListItem,
@@ -77,12 +80,15 @@ export function useDraftBillForm({
   const form = useForm<DraftBillFormInput, unknown, DraftBillFormValues>({
     resolver: zodResolver(draftBillFormSchema),
     defaultValues: createDefaultDraftBillFormValues(),
+    mode: 'onBlur',
   });
   const {
     control,
+    formState,
     handleSubmit,
     register,
     reset,
+    setValue,
   } = form;
   const lineItems = useFieldArray({
     control,
@@ -106,11 +112,32 @@ export function useDraftBillForm({
     name: 'currency',
   });
 
-  const lineItemTotal = useMemo(
-    () => sumMoneyStrings(watchedLineItems.map((lineItem) => lineItem.amount || '0')),
+  const allLineAmountsValid = useMemo(
+    () => watchedLineItems.every(
+      (lineItem) => positiveMoneyStringSchema.safeParse(lineItem.amount).success,
+    ),
     [watchedLineItems],
   );
-  const totalsMatch = lineItemTotal === Number(watchedAmount);
+
+  const billAmountValid = useMemo(
+    () => positiveMoneyStringSchema.safeParse(watchedAmount).success,
+    [watchedAmount],
+  );
+
+  const lineItemTotal = useMemo(
+    () => sumMoneyStrings(
+      watchedLineItems.map((lineItem) => (
+        positiveMoneyStringSchema.safeParse(lineItem.amount).success
+          ? lineItem.amount
+          : '0'
+      )),
+    ),
+    [watchedLineItems],
+  );
+
+  const totalsMatch = billAmountValid
+    && allLineAmountsValid
+    && lineItemTotal === Number(watchedAmount);
 
   useEffect(() => {
     reset(
@@ -132,11 +159,29 @@ export function useDraftBillForm({
     onSubmit(values);
   }, [onSubmit]);
 
+  const registerCurrency = useCallback(
+    () => register('currency', {
+      setValueAs: (value: string) => (typeof value === 'string' ? value.toUpperCase() : value),
+      onChange: (event: { target: { value: string } }) => {
+        const next = event.target.value.toUpperCase();
+        if (next !== event.target.value) {
+          setValue('currency', next, {
+            shouldDirty: true,
+            shouldValidate: formState.isSubmitted,
+          });
+        }
+      },
+    }),
+    [formState.isSubmitted, register, setValue],
+  );
+
   return {
     fields,
+    formState,
     handleSubmit,
     lineItemTotal,
     register,
+    registerCurrency,
     appendLineItem,
     removeLineItem,
     submitDraftBill,
