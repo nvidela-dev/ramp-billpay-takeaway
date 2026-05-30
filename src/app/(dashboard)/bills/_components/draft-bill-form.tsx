@@ -9,7 +9,7 @@ import type {
   BillFormOptions,
   CreateBillInput,
   DraftBillListItem,
-} from '@/types';
+} from '@/lib/types';
 
 import { DraftBillLineItems } from './draft-bill-line-items';
 import { useDraftBillForm } from './hooks/use-draft-bill-form';

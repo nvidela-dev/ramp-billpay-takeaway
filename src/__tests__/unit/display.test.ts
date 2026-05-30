@@ -4,13 +4,13 @@ import {
   paymentStatusDisplay,
   userRoleDisplay,
 } from '@/lib/display';
+import type { SurfaceTone } from '@/app/_types';
 import type {
   BillStatus,
   PaymentMethodType,
   PaymentStatus,
-  SurfaceTone,
   UserRole,
-} from '@/types';
+} from '@/lib/types';
 
 const billStatuses: BillStatus[] = [
   'draft',

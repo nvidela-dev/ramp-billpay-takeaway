@@ -1,23 +1,9 @@
-export type SurfaceTone = 'slate' | 'sky' | 'blue' | 'amber' | 'emerald' | 'rose' | 'violet';
+// Table shell primitives: column descriptors, row actions, and the
+// placeholder-table state used by surfaces that are not yet wired to live
+// data. These are UI contracts only — repository row shapes live in
+// @/lib/types.
 
-export interface NavigationItem {
-  href: string;
-  label: string;
-  description: string;
-  icon?: 'receipt' | 'credit-card';
-}
-
-export interface SurfaceTab {
-  value: string;
-  label: string;
-  href: string;
-  description: string;
-}
-
-export interface StatusDisplayMeta {
-  label: string;
-  tone: SurfaceTone;
-}
+import type { SurfaceTone } from './style';
 
 export interface TableColumnDescriptor {
   id: string;

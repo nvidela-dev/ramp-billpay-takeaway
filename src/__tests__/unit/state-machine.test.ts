@@ -9,7 +9,7 @@ import {
   DraftBillGuardError,
   assertDraftBillEditable,
 } from '@/lib/services/bill-transitions';
-import type { BillActionType, BillStatus } from '@/types';
+import type { BillActionType, BillStatus } from '@/lib/types';
 
 const ALL_STATUSES: BillStatus[] = [
   'draft',

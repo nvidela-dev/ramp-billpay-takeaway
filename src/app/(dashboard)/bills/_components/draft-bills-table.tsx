@@ -12,7 +12,7 @@ import { Button } from '@/app/_components/ui/button';
 import { Card } from '@/app/_components/ui/card';
 import { billStatusDisplay } from '@/lib/display';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
-import type { DraftBillListItem } from '@/types';
+import type { DraftBillListItem } from '@/lib/types';
 
 interface DraftBillsTableProps {
   bills: DraftBillListItem[];

@@ -24,7 +24,7 @@ import {
 import type {
   CreateBillInput,
   DraftBillListItem,
-} from '@/types';
+} from '@/lib/types';
 
 interface UseDraftBillFormOptions {
   editingBill: DraftBillListItem | null;

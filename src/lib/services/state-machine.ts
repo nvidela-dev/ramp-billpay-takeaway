@@ -1,4 +1,4 @@
-import type { BillActionType, BillStatus } from '@/types';
+import type { BillActionType, BillStatus } from '@/lib/types';
 
 /**
  * Status transitions driven by user actions.

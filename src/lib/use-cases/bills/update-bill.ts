@@ -8,7 +8,7 @@ import type {
   Bill,
   UpdateBillInput,
   User,
-} from '@/types';
+} from '@/lib/types';
 
 export async function updateBillUseCase(
   input: UpdateBillInput,

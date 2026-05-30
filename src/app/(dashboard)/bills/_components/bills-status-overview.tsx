@@ -8,7 +8,7 @@ import {
 } from '@/app/_components/ui/card';
 import { billStatusDisplay } from '@/lib/display';
 import { formatMoney } from '@/lib/utils';
-import type { DraftBillListItem } from '@/types';
+import type { DraftBillListItem } from '@/lib/types';
 
 interface BillsStatusOverviewProps {
   draftBills: DraftBillListItem[];

@@ -28,7 +28,7 @@ import type {
   BillFormOptions,
   CreateBillInput,
   DraftBillListItem,
-} from '@/types';
+} from '@/lib/types';
 
 import { BillsFilteredView } from './bills-filtered-view';
 import { BillsStatusOverview } from './bills-status-overview';

@@ -15,7 +15,7 @@ import type {
   CreateBillInput,
   UpdateBillInput,
   User,
-} from '@/types';
+} from '@/lib/types';
 
 import { toBillActivityLogInsert } from '../activity-log.repo';
 import { toBillLineItemInsertRecords } from '../line-item.repo';

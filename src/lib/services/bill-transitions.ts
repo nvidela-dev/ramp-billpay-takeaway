@@ -1,4 +1,4 @@
-import type { Bill, BillStatus } from '@/types';
+import type { Bill, BillStatus } from '@/lib/types';
 
 export class DraftBillGuardError extends Error {
   readonly code = 'BILL_NOT_DRAFT';

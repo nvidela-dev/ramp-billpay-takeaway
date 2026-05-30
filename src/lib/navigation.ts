@@ -2,7 +2,7 @@ import type {
   NavigationItem,
   PlaceholderTableState,
   SurfaceTab,
-} from '@/types';
+} from '@/app/_types';
 
 export const dashboardNavigation = [
   {

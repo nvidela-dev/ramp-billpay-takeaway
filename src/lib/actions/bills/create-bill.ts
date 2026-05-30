@@ -11,7 +11,7 @@ import type {
   ActionResult,
   Bill,
   CreateBillInput,
-} from '@/types';
+} from '@/lib/types';
 
 import { toBillActionError } from './errors';
 import { BILL_EDITOR_ROLES } from './permissions';

@@ -1,10 +1,10 @@
+import type { StatusDisplayMeta } from '@/app/_types';
 import type {
   BillStatus,
   PaymentMethodType,
   PaymentStatus,
-  StatusDisplayMeta,
   UserRole,
-} from '@/types';
+} from '@/lib/types';
 
 export const billStatusDisplay = {
   draft: { label: 'Draft', tone: 'slate' },

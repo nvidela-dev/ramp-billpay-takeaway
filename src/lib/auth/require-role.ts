@@ -1,4 +1,4 @@
-import type { User, UserRole } from '@/types';
+import type { User, UserRole } from '@/lib/types';
 
 export class ForbiddenError extends Error {
   readonly code = 'FORBIDDEN';

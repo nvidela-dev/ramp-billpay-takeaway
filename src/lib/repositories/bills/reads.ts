@@ -15,7 +15,7 @@ import type {
   Bill,
   BillFormOptions,
   DraftBillListItem,
-} from '@/types';
+} from '@/lib/types';
 
 export async function getBillById(id: string): Promise<Bill | null> {
   const [bill] = await db.select().from(bills).where(eq(bills.id, id)).limit(1);

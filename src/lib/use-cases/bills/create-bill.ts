@@ -3,7 +3,7 @@ import type {
   Bill,
   CreateBillInput,
   User,
-} from '@/types';
+} from '@/lib/types';
 
 export async function createBillUseCase(
   input: CreateBillInput,
