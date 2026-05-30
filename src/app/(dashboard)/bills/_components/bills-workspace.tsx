@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import {
   useCallback,
-  useEffect,
   useId,
   useMemo,
   useRef,
@@ -27,10 +26,17 @@ import { billTabs } from '@/app/_navigation';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
 import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
 
+import { BillTransitionDialog } from './bill-transition-dialog';
 import { BillsStatusOverview } from './bills-status-overview';
 import { BillsTable } from './bills-table';
-import { billReadColumns, draftActionsColumn } from './bills-table-columns';
+import {
+  approvalActionsColumn,
+  billReadColumns,
+  draftActionsColumn,
+} from './bills-table-columns';
 import { DraftBillForm } from './draft-bill-form';
+import { useBillTransitions } from './hooks/use-bill-transitions';
+import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
 interface BillsWorkspaceProps {
   activeTab: string;
@@ -40,15 +46,6 @@ interface BillsWorkspaceProps {
   options: BillFormOptions;
   paymentBills: BillListItem[];
 }
-
-const FOCUSABLE_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
 
 export function BillsWorkspace({
   activeTab,
@@ -66,6 +63,12 @@ export function BillsWorkspace({
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const transitions = useBillTransitions({
+    startTransition,
+    router,
+    onDirectError: setFormError,
+  });
 
   // Re-derive editingBill from the refreshed draft list so optimistic-concurrency
   // tokens (updatedAt) stay current after router.refresh().
@@ -139,64 +142,11 @@ export function BillsWorkspace({
     });
   }, [closeForm, editingBillId, router, startTransition]);
 
-  useEffect(() => {
-    if (!isFormOpen) {
-      return undefined;
-    }
-
-    const { activeElement } = document;
-    const previouslyFocused = activeElement instanceof HTMLElement ? activeElement : null;
-    const previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const dialogNode = dialogRef.current;
-    const focusFirst = () => {
-      if (!dialogNode) {
-        return;
-      }
-      const focusables = dialogNode.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      const target = focusables[0] ?? dialogNode;
-      target.focus();
-    };
-    focusFirst();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.stopPropagation();
-        closeForm();
-        return;
-      }
-      if (event.key !== 'Tab' || !dialogNode) {
-        return;
-      }
-      const focusables = Array.from(
-        dialogNode.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      ).filter((element) => !element.hasAttribute('disabled'));
-      if (focusables.length === 0) {
-        event.preventDefault();
-        dialogNode.focus();
-        return;
-      }
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const current = document.activeElement;
-      if (event.shiftKey && current === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && current === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', onKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = previousBodyOverflow;
-      previouslyFocused?.focus?.();
-    };
-  }, [closeForm, isFormOpen]);
+  useDialogBehavior({
+    containerRef: dialogRef,
+    onClose: closeForm,
+    enabled: isFormOpen,
+  });
 
   return (
     <main className="grid gap-6">
@@ -284,6 +234,7 @@ export function BillsWorkspace({
               onDelete,
               onEdit: selectBillForEdit,
               onRequestDelete: requestDelete,
+              onSubmit: transitions.submitForApproval,
             }),
           ]}
           emptyMessage="No draft bills yet."
@@ -294,7 +245,13 @@ export function BillsWorkspace({
       {activeTab === 'approvals' ? (
         <BillsTable
           bills={approvalBills}
-          columns={billReadColumns}
+          columns={[
+            ...billReadColumns,
+            approvalActionsColumn({
+              onApprove: transitions.requestApprove,
+              onReject: transitions.requestReject,
+            }),
+          ]}
           emptyMessage="No bills awaiting approval."
         />
       ) : null}
@@ -305,6 +262,8 @@ export function BillsWorkspace({
           emptyMessage="No bills ready for payment."
         />
       ) : null}
+
+      <BillTransitionDialog isPending={isPending} transitions={transitions} />
     </main>
   );
 }

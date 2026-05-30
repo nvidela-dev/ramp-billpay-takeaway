@@ -214,9 +214,20 @@ export const bulkEditBillsSchema = z
 
 export const billIdSchema = uuidSchema;
 
-export const approveRejectSchema = z.object({
+const noteField = z.string().max(1000);
+
+export const submitForApprovalSchema = z.object({
   billId: uuidSchema,
-  note: z.string().max(1000).optional(),
+});
+
+export const approveBillSchema = z.object({
+  billId: uuidSchema,
+  note: noteField.optional(),
+});
+
+export const rejectBillSchema = z.object({
+  billId: uuidSchema,
+  note: noteField.min(1, 'A rejection note is required.'),
 });
 
 export const billIdListSchema = z.array(uuidSchema).min(1).max(100);
@@ -226,4 +237,6 @@ export type DraftBillFormInput = z.input<typeof draftBillFormSchema>;
 export type DraftBillFormValues = z.output<typeof draftBillFormSchema>;
 export type UpdateBillSchema = z.infer<typeof updateBillSchema>;
 export type BulkEditBillsSchema = z.infer<typeof bulkEditBillsSchema>;
-export type ApproveRejectSchema = z.infer<typeof approveRejectSchema>;
+export type SubmitForApprovalSchema = z.infer<typeof submitForApprovalSchema>;
+export type ApproveBillSchema = z.infer<typeof approveBillSchema>;
+export type RejectBillSchema = z.infer<typeof rejectBillSchema>;

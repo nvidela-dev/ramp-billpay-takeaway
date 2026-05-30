@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { PaymentMethodType, PaymentStatus } from '@/lib/types/enums';
 
-export const uuidSchema = z.uuid();
+export const uuidSchema = z.guid();
 
 /**
  * Money as a decimal string with up to 2 fractional digits. Matches
