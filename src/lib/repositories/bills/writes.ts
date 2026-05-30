@@ -151,28 +151,24 @@ interface ApplyBillStatusTransitionInput {
   action: string;
   actor: User;
   note?: string;
-  expectedUpdatedAt?: string;
 }
 
 export async function applyBillStatusTransition(
   input: ApplyBillStatusTransitionInput,
 ): Promise<Bill> {
-  const whereClauses = [
-    eq(bills.id, input.billId),
-    eq(bills.status, input.currentStatus),
-  ];
-  if (input.expectedUpdatedAt) {
-    whereClauses.push(eq(bills.updatedAt, new Date(input.expectedUpdatedAt)));
-  }
-
   const now = new Date();
   const metadata = input.note ? { note: input.note } : null;
 
+  // The WHERE status=$currentStatus clause is the concurrency token: if
+  // someone else has already transitioned the bill, the status no longer
+  // matches and the UPDATE returns 0 rows. The caller has already verified
+  // the bill exists via getBillById, so a 0-row result here means a stale
+  // read, not a missing row.
   const [updatedBills] = await db.batch([
     db
       .update(bills)
       .set({ status: input.nextStatus, updatedAt: now })
-      .where(and(...whereClauses))
+      .where(and(eq(bills.id, input.billId), eq(bills.status, input.currentStatus)))
       .returning(),
     db.insert(billActivityLog).values(
       toBillActivityLogInsert({
@@ -187,7 +183,7 @@ export async function applyBillStatusTransition(
 
   const [bill] = updatedBills;
   if (!bill) {
-    throw input.expectedUpdatedAt ? new BillConflictError() : new BillNotFoundError();
+    throw new BillConflictError();
   }
 
   return bill;

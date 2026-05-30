@@ -27,7 +27,6 @@ export async function approveBill(
       action: 'approve',
       actor,
       note: parsed.note,
-      expectedUpdatedAt: parsed.expectedUpdatedAt,
     });
     revalidatePath('/bills');
     revalidatePath(`/bills/${bill.id}`);

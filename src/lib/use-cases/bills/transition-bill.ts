@@ -19,7 +19,6 @@ interface TransitionBillInput {
   action: BillActionType;
   actor: User;
   note?: string;
-  expectedUpdatedAt?: string;
 }
 
 export async function transitionBillUseCase(
@@ -40,6 +39,5 @@ export async function transitionBillUseCase(
     action: logAction,
     actor: input.actor,
     note: input.note,
-    expectedUpdatedAt: input.expectedUpdatedAt,
   });
 }

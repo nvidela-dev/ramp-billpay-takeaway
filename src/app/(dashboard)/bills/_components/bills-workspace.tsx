@@ -157,10 +157,7 @@ export function BillsWorkspace({
   const onSubmitForApproval = useCallback((bill: BillListItem) => {
     setFormError(null);
     startTransition(async () => {
-      const result = await submitForApproval({
-        billId: bill.id,
-        expectedUpdatedAt: bill.updatedAt.toISOString(),
-      });
+      const result = await submitForApproval({ billId: bill.id });
       if (!result.ok) {
         setFormError(result.error.message);
         return;
@@ -195,12 +192,10 @@ export function BillsWorkspace({
       const result = kind === 'approve'
         ? await approveBill({
           billId: bill.id,
-          expectedUpdatedAt: bill.updatedAt.toISOString(),
           ...(note ? { note } : {}),
         })
         : await rejectBill({
           billId: bill.id,
-          expectedUpdatedAt: bill.updatedAt.toISOString(),
           note,
         });
 

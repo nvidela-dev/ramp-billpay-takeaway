@@ -47,17 +47,14 @@ export interface BulkEditBillsInput {
 
 export interface SubmitForApprovalInput {
   billId: string;
-  expectedUpdatedAt?: string;
 }
 
 export interface ApproveBillInput {
   billId: string;
-  expectedUpdatedAt?: string;
   note?: string;
 }
 
 export interface RejectBillInput {
   billId: string;
-  expectedUpdatedAt?: string;
   note: string;
 }

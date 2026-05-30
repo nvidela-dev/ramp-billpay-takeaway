@@ -163,15 +163,6 @@ describe('submitForApprovalSchema', () => {
     expect(submitForApprovalSchema.safeParse({ billId: UUID }).success).toBe(true);
   });
 
-  it('accepts billId with expectedUpdatedAt', () => {
-    expect(
-      submitForApprovalSchema.safeParse({
-        billId: UUID,
-        expectedUpdatedAt: '2026-05-30T15:00:00.000Z',
-      }).success,
-    ).toBe(true);
-  });
-
   it('rejects bad uuids', () => {
     expect(
       submitForApprovalSchema.safeParse({ billId: 'not-a-uuid' }).success,
