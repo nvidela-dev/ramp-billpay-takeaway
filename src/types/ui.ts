@@ -4,12 +4,7 @@ export interface NavigationItem {
   href: string;
   label: string;
   description: string;
-  icon?: 'receipt' | 'credit-card' | 'building';
-}
-
-export interface BreadcrumbItem {
-  label: string;
-  href?: string;
+  icon?: 'receipt' | 'credit-card';
 }
 
 export interface SurfaceTab {

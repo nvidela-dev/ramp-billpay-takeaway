@@ -1,4 +1,4 @@
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/app/_components/ui/card';
 
 interface MetricCardProps {
   label: string;
@@ -6,7 +6,7 @@ interface MetricCardProps {
   description?: string;
 }
 
-export function MetricCard({ description, label, value }: MetricCardProps) {
+export function MetricCard({ description = undefined, label, value }: MetricCardProps) {
   return (
     <Card>
       <CardContent>
@@ -23,7 +23,3 @@ export function MetricCard({ description, label, value }: MetricCardProps) {
     </Card>
   );
 }
-
-MetricCard.defaultProps = {
-  description: undefined,
-};

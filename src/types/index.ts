@@ -147,8 +147,7 @@ export interface VendorWithRelations extends Vendor {
 export type BillTab = | 'overview'
   | 'drafts'
   | 'approvals'
-  | 'payment'
-  | 'history';
+  | 'payment';
 
 export type PaymentTab = 'overview' | 'needs_review' | 'pending' | 'history';
 
@@ -288,34 +287,6 @@ export type BillActionType = | 'submit_for_approval'
   | 'archive'
   | 'unschedule'
   | 'delete';
-
-// ---- Server Action Signatures (reference, implemented in lib/actions/*) ----
-//
-// Bills:
-//   createBill(input: CreateBillInput)
-//   updateBill(input: UpdateBillInput)
-//   submitForApproval(billId: string)
-//   approveBill(input: ApproveRejectInput)
-//   rejectBill(input: ApproveRejectInput)
-//   schedulePayment(input: SchedulePaymentInput)
-//   initiatePayment(billId: string)
-//   markBillAsPaid(billId: string)
-//   cancelPayment(billId: string)
-//   retryPayment(billId: string)
-//   archiveBill(billId: string)
-//   unschedulePayment(billId: string)
-//   deleteBill(billId: string)
-//   bulkApproveBills(billIds: string[])
-//   bulkEditBills(input: BulkEditBillsInput)
-//   bulkDeleteBills(billIds: string[])
-//
-// Vendors:
-//   createVendor(input: CreateVendorInput)
-//   updateVendor(input: UpdateVendorInput)
-//   deleteVendor(id: string)
-//   setDefaultPaymentMethod(vendorId: string, paymentMethodId: string)
-
-// ---- Result envelope ----
 
 export type ActionResult<T> = | { ok: true; data: T }
   | { ok: false; error: { code: string; message: string } };

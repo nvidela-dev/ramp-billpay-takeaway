@@ -1,10 +1,11 @@
 import {
-  MetricCard,
-  PageHeader,
-  PlaceholderTable,
-  SurfaceTabs,
-} from '@/components/shared';
-import { billPlaceholderTable, billTabs } from '@/lib/navigation';
+  UnauthorizedError,
+  ForbiddenError,
+} from '@/lib/auth';
+import { billTabs } from '@/lib/navigation';
+import { getBillFormOptions, listDraftBills } from '@/lib/queries';
+
+import { BillsWorkspace } from './_components';
 
 interface BillsPageProps {
   searchParams: Promise<{
@@ -19,30 +20,44 @@ function resolveActiveTab(tab?: string | string[]) {
     return value;
   }
 
-  return 'overview';
+  return 'drafts';
+}
+
+async function loadBillWorkspaceData() {
+  try {
+    const [draftBills, billFormOptions] = await Promise.all([
+      listDraftBills(),
+      getBillFormOptions(),
+    ]);
+    return { draftBills, billFormOptions, loadError: null };
+  } catch (error) {
+    let loadError = 'Draft bills could not be loaded. Check the database connection.';
+    if (error instanceof UnauthorizedError) {
+      loadError = 'Sign in before creating or viewing bills.';
+    }
+    if (error instanceof ForbiddenError) {
+      loadError = 'Your account needs Bill Pay access before creating or viewing bills.';
+    }
+
+    return {
+      draftBills: [],
+      billFormOptions: { vendors: [], categories: [] },
+      loadError,
+    };
+  }
 }
 
 export default async function BillsPage({ searchParams }: BillsPageProps) {
   const params = await searchParams;
   const activeTab = resolveActiveTab(params.tab);
+  const workspaceData = await loadBillWorkspaceData();
 
   return (
-    <main className="grid gap-6">
-      <PageHeader
-        description={[
-          'Review, approve, and prepare bills for payment from a single',
-          'queue-oriented workspace.',
-        ].join(' ')}
-        eyebrow="Bill Pay"
-        title="Bills"
-      />
-      <SurfaceTabs activeValue={activeTab} tabs={billTabs} />
-      <PlaceholderTable state={billPlaceholderTable} />
-      <div className="grid gap-3 md:grid-cols-3">
-        <MetricCard label="Drafts" value="-" />
-        <MetricCard label="For approval" value="-" />
-        <MetricCard label="For payment" value="-" />
-      </div>
-    </main>
+    <BillsWorkspace
+      activeTab={activeTab}
+      bills={workspaceData.draftBills}
+      loadError={workspaceData.loadError}
+      options={workspaceData.billFormOptions}
+    />
   );
 }

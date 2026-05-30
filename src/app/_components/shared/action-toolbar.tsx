@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/app/_components/ui/button';
 import type { BulkActionDescriptor, RowActionDescriptor } from '@/types';
 
 interface ActionToolbarProps {
@@ -33,8 +33,3 @@ export function ActionToolbar({ actions = [], bulkActions = [] }: ActionToolbarP
     </div>
   );
 }
-
-ActionToolbar.defaultProps = {
-  actions: [],
-  bulkActions: [],
-};
