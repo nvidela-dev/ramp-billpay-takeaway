@@ -27,10 +27,10 @@ import { billTabs } from '@/app/_navigation';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
 import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
 
-import { BillsListTable } from './bills-list-table';
 import { BillsStatusOverview } from './bills-status-overview';
+import { BillsTable } from './bills-table';
+import { billReadColumns, draftActionsColumn } from './bills-table-columns';
 import { DraftBillForm } from './draft-bill-form';
-import { DraftBillsTable } from './draft-bills-table';
 
 interface BillsWorkspaceProps {
   activeTab: string;
@@ -274,25 +274,34 @@ export function BillsWorkspace({
         />
       ) : null}
       {activeTab === 'drafts' ? (
-        <DraftBillsTable
+        <BillsTable
           bills={draftBills}
-          deleteCandidateId={deleteCandidateId}
+          columns={[
+            ...billReadColumns,
+            draftActionsColumn({
+              deleteCandidateId,
+              onCancelDelete: cancelDelete,
+              onDelete,
+              onEdit: selectBillForEdit,
+              onRequestDelete: requestDelete,
+            }),
+          ]}
+          emptyMessage="No draft bills yet."
           isLoading={isPending}
-          onCancelDelete={cancelDelete}
-          onDelete={onDelete}
-          onEdit={selectBillForEdit}
-          onRequestDelete={requestDelete}
+          loadingMessage="Loading draft bills…"
         />
       ) : null}
       {activeTab === 'approvals' ? (
-        <BillsListTable
+        <BillsTable
           bills={approvalBills}
+          columns={billReadColumns}
           emptyMessage="No bills awaiting approval."
         />
       ) : null}
       {activeTab === 'payment' ? (
-        <BillsListTable
+        <BillsTable
           bills={paymentBills}
+          columns={billReadColumns}
           emptyMessage="No bills ready for payment."
         />
       ) : null}
