@@ -1,13 +1,15 @@
 import {
   approveBillSchema,
-  billFiltersSchema,
-  billPaginationSchema,
   bulkEditBillsSchema,
   createBillSchema,
   rejectBillSchema,
   submitForApprovalSchema,
   updateBillSchema,
 } from '@/lib/validators/bill.schemas';
+import {
+  billFiltersSchema,
+  billPaginationSchema,
+} from '@/lib/validators/bill-filter-spec';
 import {
   editPaymentDateSchema,
   schedulePaymentSchema,

@@ -25,11 +25,12 @@ import { updateBill } from '@/lib/actions/bills/update-bill';
 import { billTabs } from '@/app/_navigation';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
 import type {
-  BillFilterOptions,
   BillListResult,
+  BillReferenceData,
+  BillStatusAggregate,
 } from '@/lib/types/bill/filters';
-import type { BillStatus } from '@/lib/types/enums';
-import type { BillFormOptions, BillListItem } from '@/lib/types/bill/views';
+import type { BillFilterTab } from '@/lib/types/bill/tabs';
+import type { BillListItem } from '@/lib/types/bill/views';
 
 import { BillTransitionDialog } from './bill-transition-dialog';
 import { BillsStatusOverview } from './bills-status-overview';
@@ -42,48 +43,45 @@ import {
 } from './bills-table-columns';
 import { ColumnPicker } from './column-picker';
 import { DraftBillForm } from './draft-bill-form';
-import {
-  BillFilterBar,
-  type BillFilterOptionsBag,
-} from './filters/bill-filter-bar';
-import type { BillFilterTab } from './filters/bill-filter-dimensions';
+import { BillFilterBar } from './filters/bill-filter-bar';
 import { useBillFilters } from './hooks/use-bill-filters';
 import { useBillTransitions } from './hooks/use-bill-transitions';
 import { useColumnVisibility } from './hooks/use-column-visibility';
 import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
-const PAYMENT_TAB_STATUSES: BillStatus[] = ['approved', 'scheduled', 'initiated'];
+type BillTabValue = 'overview' | BillFilterTab;
 
 interface BillsWorkspaceProps {
-  activeTab: string;
-  approvalBills: BillListResult<BillListItem>;
-  draftBills: BillListResult<BillListItem>;
-  filterOptions: BillFilterOptions;
+  activeTab: BillTabValue;
+  activeBills: BillListResult<BillListItem>;
+  aggregates: BillStatusAggregate[];
   loadError: string | null;
-  options: BillFormOptions;
-  paymentBills: BillListResult<BillListItem>;
+  referenceData: BillReferenceData;
 }
+
+const draftFormOptions = (referenceData: BillReferenceData) => ({
+  vendors: referenceData.vendors,
+  categories: referenceData.categories,
+});
 
 export function BillsWorkspace({
   activeTab,
-  approvalBills,
-  draftBills,
-  filterOptions,
+  activeBills,
+  aggregates,
   loadError,
-  options,
-  paymentBills,
+  referenceData,
 }: BillsWorkspaceProps) {
   const router = useRouter();
   const dialogTitleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const [editingBillId, setEditingBillId] = useState<string | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isMutating, startMutation] = useTransition();
 
   const transitions = useBillTransitions({
-    startTransition,
+    startTransition: startMutation,
     router,
     onDirectError: setFormError,
   });
@@ -91,28 +89,30 @@ export function BillsWorkspace({
   const filtersController = useBillFilters();
 
   const editingBill = useMemo(
-    () => (editingBillId
-      ? draftBills.items.find((bill) => bill.id === editingBillId) ?? null
+    () => (editingBillId && activeTab === 'drafts'
+      ? activeBills.items.find((bill) => bill.id === editingBillId) ?? null
       : null),
-    [draftBills.items, editingBillId],
+    [activeBills.items, activeTab, editingBillId],
   );
+
+  const isFormOpen = isCreating || (editingBillId !== null && editingBill !== null);
 
   const closeForm = useCallback(() => {
     setEditingBillId(null);
-    setIsFormOpen(false);
+    setIsCreating(false);
     setFormError(null);
   }, []);
 
   const openCreateForm = useCallback(() => {
     setEditingBillId(null);
     setFormError(null);
-    setIsFormOpen(true);
+    setIsCreating(true);
   }, []);
 
   const selectBillForEdit = useCallback((bill: BillListItem) => {
     setEditingBillId(bill.id);
+    setIsCreating(false);
     setFormError(null);
-    setIsFormOpen(true);
   }, []);
 
   const cancelDelete = useCallback(() => {
@@ -125,8 +125,7 @@ export function BillsWorkspace({
 
   const onSubmit = useCallback((input: CreateBillInput) => {
     setFormError(null);
-
-    startTransition(async () => {
+    startMutation(async () => {
       const result = editingBill
         ? await updateBill({
           ...input,
@@ -143,10 +142,10 @@ export function BillsWorkspace({
       closeForm();
       router.refresh();
     });
-  }, [closeForm, editingBill, router, startTransition]);
+  }, [closeForm, editingBill, router]);
 
   const onDelete = useCallback((id: string) => {
-    startTransition(async () => {
+    startMutation(async () => {
       const result = await deleteBill(id);
       if (!result.ok) {
         setFormError(result.error.message);
@@ -160,7 +159,7 @@ export function BillsWorkspace({
       setDeleteCandidateId(null);
       router.refresh();
     });
-  }, [closeForm, editingBillId, router, startTransition]);
+  }, [closeForm, editingBillId, router]);
 
   useDialogBehavior({
     containerRef: dialogRef,
@@ -186,18 +185,12 @@ export function BillsWorkspace({
       onReject: transitions.requestReject,
     }),
   ];
-  const paymentColumns = billReadColumns;
 
   const draftVisibility = useColumnVisibility(draftColumns);
   const approvalVisibility = useColumnVisibility(approvalColumns);
-  const paymentVisibility = useColumnVisibility(paymentColumns);
+  const paymentVisibility = useColumnVisibility(billReadColumns);
 
-  const filterOptionsBag: BillFilterOptionsBag = useMemo(() => ({
-    vendors: filterOptions.vendors,
-    owners: filterOptions.owners,
-    categories: filterOptions.categories,
-    statuses: PAYMENT_TAB_STATUSES,
-  }), [filterOptions]);
+  const isTableLoading = isMutating || filtersController.isPending;
 
   const renderTabToolbar = (
     tab: BillFilterTab,
@@ -206,7 +199,7 @@ export function BillsWorkspace({
     <div className="flex flex-wrap items-start justify-between gap-3">
       <BillFilterBar
         controller={filtersController}
-        options={filterOptionsBag}
+        options={referenceData}
         tab={tab}
       />
       <ColumnPicker
@@ -277,11 +270,11 @@ export function BillsWorkspace({
               <DraftBillForm
                 editingBill={editingBill}
                 formError={formError}
-                isPending={isPending}
+                isPending={isMutating}
                 loadError={loadError}
                 onCancelEdit={closeForm}
                 onSubmit={onSubmit}
-                options={options}
+                options={draftFormOptions(referenceData)}
               />
             </div>
           </div>
@@ -301,49 +294,49 @@ export function BillsWorkspace({
       ) : null}
 
       {activeTab === 'overview' ? (
-        <BillsStatusOverview
-          approvalBills={approvalBills.items}
-          draftBills={draftBills.items}
-          paymentBills={paymentBills.items}
-        />
+        <BillsStatusOverview aggregates={aggregates} />
       ) : null}
       {activeTab === 'drafts' ? (
         <div className="grid gap-3">
           {renderTabToolbar('drafts', draftVisibility)}
           <BillsTable
-            bills={draftBills.items}
+            bills={activeBills.items}
             columns={draftVisibility.visibleColumns}
             emptyMessage="No draft bills match this view."
-            isLoading={isPending}
+            isLoading={isTableLoading}
             loadingMessage="Loading draft bills…"
           />
-          {renderPagination(draftBills.total)}
+          {renderPagination(activeBills.total)}
         </div>
       ) : null}
       {activeTab === 'approvals' ? (
         <div className="grid gap-3">
           {renderTabToolbar('approvals', approvalVisibility)}
           <BillsTable
-            bills={approvalBills.items}
+            bills={activeBills.items}
             columns={approvalVisibility.visibleColumns}
             emptyMessage="No bills awaiting approval match this view."
+            isLoading={isTableLoading}
+            loadingMessage="Loading bills…"
           />
-          {renderPagination(approvalBills.total)}
+          {renderPagination(activeBills.total)}
         </div>
       ) : null}
       {activeTab === 'payment' ? (
         <div className="grid gap-3">
           {renderTabToolbar('payment', paymentVisibility)}
           <BillsTable
-            bills={paymentBills.items}
+            bills={activeBills.items}
             columns={paymentVisibility.visibleColumns}
             emptyMessage="No bills ready for payment match this view."
+            isLoading={isTableLoading}
+            loadingMessage="Loading bills…"
           />
-          {renderPagination(paymentBills.total)}
+          {renderPagination(activeBills.total)}
         </div>
       ) : null}
 
-      <BillTransitionDialog isPending={isPending} transitions={transitions} />
+      <BillTransitionDialog isPending={isMutating} transitions={transitions} />
     </main>
   );
 }

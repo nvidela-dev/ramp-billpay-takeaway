@@ -1,8 +1,10 @@
 import type { Config } from 'jest';
 
-// Multi-project Jest scaffold. PR-0 only ships unit tests; the `integration`
-// and `components` projects are placeholder targets that stay green until
-// those suites land in later PRs.
+const moduleNameMapper = {
+  '^@/(.*)$': '<rootDir>/src/$1',
+  '^nuqs/server$': '<rootDir>/src/__tests__/__mocks__/nuqs-server.ts',
+};
+
 const config: Config = {
   passWithNoTests: true,
   projects: [
@@ -11,27 +13,21 @@ const config: Config = {
       displayName: 'unit',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/src/__tests__/unit/**/*.test.ts'],
-      moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-      },
+      moduleNameMapper,
     },
     {
       preset: 'ts-jest',
       displayName: 'integration',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/src/__tests__/integration/**/*.test.ts'],
-      moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-      },
+      moduleNameMapper,
     },
     {
       preset: 'ts-jest',
       displayName: 'components',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/src/__tests__/components/**/*.test.ts?(x)'],
-      moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-      },
+      moduleNameMapper,
     },
   ],
 };
