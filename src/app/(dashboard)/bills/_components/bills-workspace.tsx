@@ -268,13 +268,6 @@ export function BillsWorkspace({
       <SurfaceTabs
         actions={(
           <>
-            {activeTab !== 'overview' ? (
-              <BillFilterBar
-                controller={filtersController}
-                options={referenceData}
-                tab={activeTab}
-              />
-            ) : null}
             {activeTab === 'drafts' ? (
               <BillsBulkActionsMenu
                 actions={draftBulkActions}
@@ -317,6 +310,13 @@ export function BillsWorkspace({
         activeValue={activeTab}
         tabs={billTabs}
       />
+      {activeTab !== 'overview' ? (
+        <BillFilterBar
+          controller={filtersController}
+          options={referenceData}
+          tab={activeTab}
+        />
+      ) : null}
 
       {isFormOpen ? (
         <div
