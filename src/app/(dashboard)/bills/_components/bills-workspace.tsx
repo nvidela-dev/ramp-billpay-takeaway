@@ -47,20 +47,34 @@ import { useDialogBehavior } from './hooks/use-dialog-behavior';
 
 interface BillsWorkspaceProps {
   activeTab: string;
+  approvalAmountTotal: string;
   approvalBills: BillListItem[];
+  approvalTotal: number;
+  currentPage: number;
+  draftAmountTotal: string;
   draftBills: BillListItem[];
+  draftTotal: number;
   loadError: string | null;
   options: BillFormOptions;
+  paymentAmountTotal: string;
   paymentBills: BillListItem[];
+  paymentTotal: number;
 }
 
 export function BillsWorkspace({
   activeTab,
+  approvalAmountTotal,
   approvalBills,
+  approvalTotal,
+  currentPage,
+  draftAmountTotal,
   draftBills,
+  draftTotal,
   loadError,
   options,
+  paymentAmountTotal,
   paymentBills,
+  paymentTotal,
 }: BillsWorkspaceProps) {
   const router = useRouter();
   const dialogTitleId = useId();
@@ -254,7 +268,51 @@ export function BillsWorkspace({
         eyebrow="Bill Pay"
         title="Bills"
       />
-      <SurfaceTabs activeValue={activeTab} tabs={billTabs} />
+      <SurfaceTabs
+        actions={(
+          <>
+            {activeTab === 'drafts' ? (
+              <BillsBulkActionsMenu
+                actions={draftBulkActions}
+                count={draftSelection.selectedCount}
+                isPending={isPending}
+                onClear={draftSelection.clear}
+              />
+            ) : null}
+            {activeTab === 'approvals' ? (
+              <BillsBulkActionsMenu
+                actions={approvalBulkActions}
+                count={approvalSelection.selectedCount}
+                isPending={isPending}
+                onClear={approvalSelection.clear}
+              />
+            ) : null}
+            {activeTab === 'drafts' ? (
+              <ColumnPicker
+                columns={draftVisibility.configurableColumns}
+                hiddenIds={draftVisibility.hiddenIds}
+                onToggle={draftVisibility.toggle}
+              />
+            ) : null}
+            {activeTab === 'approvals' ? (
+              <ColumnPicker
+                columns={approvalVisibility.configurableColumns}
+                hiddenIds={approvalVisibility.hiddenIds}
+                onToggle={approvalVisibility.toggle}
+              />
+            ) : null}
+            {activeTab === 'payment' ? (
+              <ColumnPicker
+                columns={paymentVisibility.configurableColumns}
+                hiddenIds={paymentVisibility.hiddenIds}
+                onToggle={paymentVisibility.toggle}
+              />
+            ) : null}
+          </>
+        )}
+        activeValue={activeTab}
+        tabs={billTabs}
+      />
 
       {isFormOpen ? (
         <div
@@ -312,70 +370,53 @@ export function BillsWorkspace({
 
       {activeTab === 'overview' ? (
         <BillsStatusOverview
-          approvalBills={approvalBills}
-          draftBills={draftBills}
-          paymentBills={paymentBills}
+          approvalAmountTotal={approvalAmountTotal}
+          approvalTotal={approvalTotal}
+          draftAmountTotal={draftAmountTotal}
+          draftTotal={draftTotal}
+          paymentAmountTotal={paymentAmountTotal}
+          paymentTotal={paymentTotal}
         />
       ) : null}
       {activeTab === 'drafts' ? (
-        <div className="grid gap-3">
-          <div className="flex items-center justify-end gap-2">
-            <BillsBulkActionsMenu
-              actions={draftBulkActions}
-              count={draftSelection.selectedCount}
-              isPending={isPending}
-              onClear={draftSelection.clear}
-            />
-            <ColumnPicker
-              columns={draftVisibility.configurableColumns}
-              hiddenIds={draftVisibility.hiddenIds}
-              onToggle={draftVisibility.toggle}
-            />
-          </div>
+        <div>
           <BillsTable
+            amountTotal={draftAmountTotal}
             bills={draftBills}
             columns={draftVisibility.visibleColumns}
+            currentPage={currentPage}
             emptyMessage="No draft bills yet."
             isLoading={isPending}
             loadingMessage="Loading draft bills…"
+            totalBills={draftTotal}
           />
         </div>
       ) : null}
       {activeTab === 'approvals' ? (
-        <div className="grid gap-3">
-          <div className="flex items-center justify-end gap-2">
-            <BillsBulkActionsMenu
-              actions={approvalBulkActions}
-              count={approvalSelection.selectedCount}
-              isPending={isPending}
-              onClear={approvalSelection.clear}
-            />
-            <ColumnPicker
-              columns={approvalVisibility.configurableColumns}
-              hiddenIds={approvalVisibility.hiddenIds}
-              onToggle={approvalVisibility.toggle}
-            />
-          </div>
+        <div>
           <BillsTable
+            amountTotal={approvalAmountTotal}
             bills={approvalBills}
             columns={approvalVisibility.visibleColumns}
+            currentPage={currentPage}
             emptyMessage="No bills awaiting approval."
+            isLoading={isPending}
+            loadingMessage="Loading bills awaiting approval…"
+            totalBills={approvalTotal}
           />
         </div>
       ) : null}
       {activeTab === 'payment' ? (
-        <div className="grid gap-3">
-          <div className="flex justify-end">
-            <ColumnPicker
-              columns={paymentVisibility.configurableColumns}
-              hiddenIds={paymentVisibility.hiddenIds}
-              onToggle={paymentVisibility.toggle}
-            />
-          </div>
+        <div>
           <BillsTable
+            amountTotal={paymentAmountTotal}
             bills={paymentBills}
             columns={paymentVisibility.visibleColumns}
+            currentPage={currentPage}
             emptyMessage="No bills ready for payment."
+            isLoading={isPending}
+            loadingMessage="Loading bills ready for payment…"
+            totalBills={paymentTotal}
           />
         </div>
       ) : null}
