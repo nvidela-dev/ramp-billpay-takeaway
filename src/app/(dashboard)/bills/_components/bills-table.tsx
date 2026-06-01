@@ -14,12 +14,23 @@ import type { BillListItem } from '@/lib/types/bill/views';
 const PAGE_SIZE = 10;
 const SKELETON_ROW_COUNT = 10;
 
-function BillsTableSkeletonRows({ colSpan }: { colSpan: number }) {
+function BillsTableSkeletonRows({ columns }: { columns: BillsTableColumn[] }) {
   return Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
     <tr className="border-b border-slate-100 last:border-0" key={index}>
-      <td aria-label="Loading bill" className="px-4 py-3" colSpan={colSpan}>
-        <div className="h-5 animate-pulse rounded bg-slate-100" />
-      </td>
+      {columns.map((column) => (
+        <td
+          aria-label="Loading bill"
+          className={column.cellClassName ?? 'py-3 pr-4'}
+          key={column.id}
+        >
+          <div
+            className={[
+              'animate-pulse rounded bg-slate-100',
+              column.id === 'vendor' ? 'h-8' : 'h-5',
+            ].join(' ')}
+          />
+        </td>
+      ))}
     </tr>
   ));
 }
@@ -100,7 +111,7 @@ export function BillsTable({
                 <tr className="sr-only">
                   <td colSpan={colSpan}>{loadingMessage}</td>
                 </tr>
-                <BillsTableSkeletonRows colSpan={colSpan} />
+                <BillsTableSkeletonRows columns={columns} />
               </>
             ) : null}
             {!showSkeleton && bills.length === 0 ? (
@@ -130,7 +141,7 @@ export function BillsTable({
           </tbody>
         </table>
       </div>
-      {!showSkeleton && bills.length > 0 ? (
+      {bills.length > 0 ? (
         <div
           className={[
             'flex items-center justify-between gap-4 border-t border-slate-200 px-4 py-3',
@@ -157,7 +168,7 @@ export function BillsTable({
             </span>
             <div className="flex gap-2">
               <Button
-                disabled={currentPage === 1}
+                disabled={showSkeleton || currentPage === 1}
                 onClick={() => goToPage(currentPage - 1)}
                 size="sm"
                 type="button"
@@ -166,7 +177,7 @@ export function BillsTable({
                 Previous
               </Button>
               <Button
-                disabled={currentPage === pageCount}
+                disabled={showSkeleton || currentPage === pageCount}
                 onClick={() => goToPage(currentPage + 1)}
                 size="sm"
                 type="button"

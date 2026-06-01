@@ -94,6 +94,10 @@ describe('BillsTable', () => {
 
     expect(screen.getByText('Loading draft bills…')).toBeInTheDocument();
     expect(container.querySelectorAll('.animate-pulse')).toHaveLength(10);
+    expect(screen.getByText((content) => content.includes('12 bills'))).toBeInTheDocument();
+    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
     expect(screen.queryByText('PAGE-1')).not.toBeInTheDocument();
   });
 });
