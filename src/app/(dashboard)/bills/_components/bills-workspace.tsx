@@ -382,6 +382,8 @@ export function BillsWorkspace({
             columns={approvalVisibility.visibleColumns}
             currentPage={currentPage}
             emptyMessage="No bills awaiting approval."
+            isLoading={isPending}
+            loadingMessage="Loading bills awaiting approval…"
             totalBills={approvalTotal}
           />
         </div>
@@ -401,6 +403,8 @@ export function BillsWorkspace({
             columns={paymentVisibility.visibleColumns}
             currentPage={currentPage}
             emptyMessage="No bills ready for payment."
+            isLoading={isPending}
+            loadingMessage="Loading bills ready for payment…"
             totalBills={paymentTotal}
           />
         </div>

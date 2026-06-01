@@ -77,6 +77,23 @@ describe('BillsTable', () => {
 
     await user.click(screen.getByRole('button', { name: 'Next' }));
 
-    expect(push).toHaveBeenCalledWith('?tab=drafts&page=2');
+    expect(push).toHaveBeenCalledWith('?tab=drafts&page=2', { scroll: false });
+  });
+
+  it('renders animated skeleton rows while loading', () => {
+    const { container } = render(
+      <BillsTable
+        bills={bills}
+        columns={columns}
+        emptyMessage="No bills."
+        isLoading
+        loadingMessage="Loading draft bills…"
+        totalBills={12}
+      />,
+    );
+
+    expect(screen.getByText('Loading draft bills…')).toBeInTheDocument();
+    expect(container.querySelectorAll('.animate-pulse')).toHaveLength(10);
+    expect(screen.queryByText('PAGE-1')).not.toBeInTheDocument();
   });
 });

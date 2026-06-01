@@ -1,7 +1,10 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import type { ReactNode } from 'react';
+import {
+  useTransition,
+  type ReactNode,
+} from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
 import { Card } from '@/app/_components/atoms/card';
@@ -9,6 +12,17 @@ import { formatMoney } from '@/lib/utils';
 import type { BillListItem } from '@/lib/types/bill/views';
 
 const PAGE_SIZE = 10;
+const SKELETON_ROW_COUNT = 10;
+
+function BillsTableSkeletonRows({ colSpan }: { colSpan: number }) {
+  return Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
+    <tr className="border-b border-slate-100 last:border-0" key={index}>
+      <td aria-label="Loading bill" className="px-4 py-3" colSpan={colSpan}>
+        <div className="h-5 animate-pulse rounded bg-slate-100" />
+      </td>
+    </tr>
+  ));
+}
 
 export interface BillsTableColumn {
   id: string;
@@ -44,20 +58,24 @@ export function BillsTable({
 }: BillsTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isNavigating, startNavigation] = useTransition();
   const total = amountTotal ?? bills.reduce((sum, bill) => sum + Number(bill.amount), 0).toFixed(2);
   const currency = bills[0]?.currency ?? 'USD';
   const colSpan = columns.length;
   const pageCount = Math.max(1, Math.ceil(totalBills / PAGE_SIZE));
+  const showSkeleton = isLoading || isNavigating;
 
   const goToPage = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(page));
-    router.push(`?${params.toString()}`);
+    startNavigation(() => {
+      router.push(`?${params.toString()}`, { scroll: false });
+    });
   };
 
   return (
     <Card className="overflow-hidden">
-      <div className="overflow-x-auto" aria-busy={isLoading}>
+      <div className="overflow-x-auto" aria-busy={showSkeleton}>
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="border-b border-slate-200 text-xs font-medium text-slate-500">
             <tr>
@@ -77,21 +95,22 @@ export function BillsTable({
             </tr>
           </thead>
           <tbody>
-            {isLoading ? (
-              <tr>
-                <td className="py-8 text-center text-slate-600" colSpan={colSpan}>
-                  {loadingMessage}
-                </td>
-              </tr>
+            {showSkeleton ? (
+              <>
+                <tr className="sr-only">
+                  <td colSpan={colSpan}>{loadingMessage}</td>
+                </tr>
+                <BillsTableSkeletonRows colSpan={colSpan} />
+              </>
             ) : null}
-            {!isLoading && bills.length === 0 ? (
+            {!showSkeleton && bills.length === 0 ? (
               <tr>
                 <td className="py-8 text-center text-slate-600" colSpan={colSpan}>
                   {emptyMessage}
                 </td>
               </tr>
             ) : null}
-            {!isLoading
+            {!showSkeleton
               ? bills.map((bill) => (
                 <tr
                   className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
@@ -111,7 +130,7 @@ export function BillsTable({
           </tbody>
         </table>
       </div>
-      {!isLoading && bills.length > 0 ? (
+      {!showSkeleton && bills.length > 0 ? (
         <div
           className={[
             'flex items-center justify-between gap-4 border-t border-slate-200 px-4 py-3',
