@@ -150,6 +150,10 @@ erDiagram
 - Retrying a failed payment currently transitions the same payment row back to `scheduled`; it does not create a linked payment attempt.
 - Saved workspace preferences intentionally live in a versioned JSONB document on `users`. They are user-interface state, not financial domain records.
 
+## Skipped Features
+
+- **Custom saved views were not added.** Users can save one set of filters, sort order, page size, and hidden columns for each built-in Bills or Payments tab. They cannot create, name, or switch between additional custom views.
+
 ## Status
 
-The repository currently includes the protected Bills and Payments workspaces, lifecycle actions, filters, sorting, pagination, bulk actions, saved per-user table views, activity logs, and filtered CSV exports. See [PR-PLAN.md](./docs/PR-PLAN.md) for the delivery plan.
+The repository currently includes the protected Bills and Payments workspaces, lifecycle actions, filters, sorting, pagination, bulk actions, saved per-user tab preferences, activity logs, and filtered CSV exports. See [PR-PLAN.md](./docs/PR-PLAN.md) for the delivery plan.
