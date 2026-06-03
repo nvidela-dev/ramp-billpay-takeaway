@@ -3,6 +3,7 @@
 import { Button } from '@/app/_components/atoms/button';
 import { SelectionCheckbox } from '@/app/_components/atoms/selection-checkbox';
 import type { TableSelection } from '@/app/_components/hooks/use-table-selection';
+import { DetailNameTrigger } from '@/app/_components/molecules/detail-name-trigger';
 import { StatusBadge } from '@/app/_components/molecules/status-badge';
 import { paymentMethodDisplay, paymentStatusDisplay } from '@/app/_display';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
@@ -40,39 +41,49 @@ function formatOwnerDate(date: Date): string {
   }).format(date);
 }
 
-export const vendorOwnerColumn: PaymentsTableColumn = {
-  id: 'vendor',
-  header: 'Vendor / owner',
-  headerClassName: 'py-3 pl-4 pr-4 font-medium',
-  cellClassName: 'py-3 pl-4 pr-4',
-  isConfigurable: false,
-  skeletonClassName: 'h-8',
-  sortKey: 'vendor',
-  render: (payment) => (
-    <div className="flex items-center gap-3">
-      <span
-        aria-hidden
-        className={cn(
-          'grid size-8 shrink-0 place-items-center rounded-full',
-          'text-xs font-semibold',
-          vendorTone(payment.vendor.name),
-        )}
-      >
-        {vendorInitials(payment.vendor.name)}
-      </span>
-      <div className="min-w-0">
-        <p className="truncate font-medium text-slate-950">
-          {payment.vendor.name}
-        </p>
-        <p className="truncate text-xs text-slate-500">
-          {payment.creator.fullName}
-          {' · '}
-          {formatOwnerDate(payment.createdAt)}
-        </p>
+interface DetailsHandlers {
+  onViewDetails: (payment: PaymentListItem) => void;
+}
+
+export function vendorOwnerColumn(handlers: DetailsHandlers): PaymentsTableColumn {
+  const { onViewDetails } = handlers;
+
+  return {
+    id: 'vendor',
+    header: 'Vendor / owner',
+    headerClassName: 'py-3 pl-4 pr-4 font-medium',
+    cellClassName: 'py-3 pl-4 pr-4',
+    isConfigurable: false,
+    skeletonClassName: 'h-8',
+    sortKey: 'vendor',
+    render: (payment) => (
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden
+          className={cn(
+            'grid size-8 shrink-0 place-items-center rounded-full',
+            'text-xs font-semibold',
+            vendorTone(payment.vendor.name),
+          )}
+        >
+          {vendorInitials(payment.vendor.name)}
+        </span>
+        <div className="min-w-0">
+          <DetailNameTrigger
+            ariaLabel={`View payment details for ${payment.vendor.name}`}
+            label={payment.vendor.name}
+            onClick={() => onViewDetails(payment)}
+          />
+          <p className="truncate text-xs text-slate-500">
+            {payment.creator.fullName}
+            {' · '}
+            {formatOwnerDate(payment.createdAt)}
+          </p>
+        </div>
       </div>
-    </div>
-  ),
-};
+    ),
+  };
+}
 
 export const statusColumn: PaymentsTableColumn = {
   id: 'status',
@@ -128,16 +139,18 @@ export const createdAtColumn: PaymentsTableColumn = {
   render: (payment) => formatOwnerDate(payment.createdAt),
 };
 
-export const paymentReadColumns: PaymentsTableColumn[] = [
-  vendorOwnerColumn,
-  statusColumn,
-  amountColumn,
-  methodColumn,
-  scheduledDateColumn,
-  arrivalDateColumn,
-  invoiceNumberColumn,
-  createdAtColumn,
-];
+export function paymentReadColumns(handlers: DetailsHandlers): PaymentsTableColumn[] {
+  return [
+    vendorOwnerColumn(handlers),
+    statusColumn,
+    amountColumn,
+    methodColumn,
+    scheduledDateColumn,
+    arrivalDateColumn,
+    invoiceNumberColumn,
+    createdAtColumn,
+  ];
+}
 
 export function selectionColumn(selection: TableSelection): PaymentsTableColumn {
   return {

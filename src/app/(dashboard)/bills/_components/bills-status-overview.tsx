@@ -12,6 +12,7 @@ import { Fragment, useTransition, type ComponentType } from 'react';
 
 import { Button } from '@/app/_components/atoms/button';
 import { Card } from '@/app/_components/atoms/card';
+import { DetailNameTrigger } from '@/app/_components/molecules/detail-name-trigger';
 import { StatusBadge } from '@/app/_components/molecules/status-badge';
 import { billStatusDisplay } from '@/app/_display';
 import { cn, formatMoney } from '@/lib/utils';
@@ -28,6 +29,7 @@ import { formatOwnerDate, vendorInitials, vendorTone } from './bills-table-colum
 
 interface BillsStatusOverviewProps {
   groups: BillOverviewGroup[];
+  onViewDetails: (bill: BillListItem) => void;
 }
 
 interface GroupMeta {
@@ -41,7 +43,15 @@ const GROUP_META: Record<OverviewGroupTab, GroupMeta> = {
   payment: { title: 'For payment', Icon: Banknote },
 };
 
-function VendorOwnerCell({ bill }: { bill: BillListItem }): React.ReactElement {
+interface VendorOwnerCellProps {
+  bill: BillListItem;
+  onViewDetails: (bill: BillListItem) => void;
+}
+
+function VendorOwnerCell({
+  bill,
+  onViewDetails,
+}: VendorOwnerCellProps): React.ReactElement {
   return (
     <div className="flex items-center gap-3">
       <span
@@ -55,9 +65,11 @@ function VendorOwnerCell({ bill }: { bill: BillListItem }): React.ReactElement {
         {vendorInitials(bill.vendor.name)}
       </span>
       <div className="min-w-0">
-        <p className="truncate font-medium text-slate-950">
-          {bill.vendor.name}
-        </p>
+        <DetailNameTrigger
+          ariaLabel={`View bill details for ${bill.vendor.name}`}
+          label={bill.vendor.name}
+          onClick={() => onViewDetails(bill)}
+        />
         <p className="truncate text-xs text-slate-500">
           {bill.creator.fullName}
           {' · '}
@@ -68,14 +80,13 @@ function VendorOwnerCell({ bill }: { bill: BillListItem }): React.ReactElement {
   );
 }
 
-export function BillsStatusOverview({ groups }: BillsStatusOverviewProps): React.ReactElement {
+export function BillsStatusOverview({
+  groups,
+  onViewDetails,
+}: BillsStatusOverviewProps): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-
-  const openBill = (id: string): void => {
-    router.push(`/bills/${id}`);
-  };
 
   const goToGroupPage = (tab: BillFilterTab, page: number): void => {
     const params = new URLSearchParams(searchParams.toString());
@@ -130,23 +141,11 @@ export function BillsStatusOverview({ groups }: BillsStatusOverviewProps): React
                   ) : (
                     items.map((bill) => (
                       <tr
-                        className={cn(
-                          'h-14 cursor-pointer border-b border-slate-100',
-                          'hover:bg-slate-50',
-                        )}
+                        className="h-14 border-b border-slate-100 hover:bg-slate-50"
                         key={bill.id}
-                        onClick={() => openBill(bill.id)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
-                            openBill(bill.id);
-                          }
-                        }}
-                        role="link"
-                        tabIndex={0}
                       >
                         <td className="py-3 pl-4 pr-4">
-                          <VendorOwnerCell bill={bill} />
+                          <VendorOwnerCell bill={bill} onViewDetails={onViewDetails} />
                         </td>
                         <td className="py-3 pr-4">
                           <StatusBadge status={billStatusDisplay[bill.status]} />

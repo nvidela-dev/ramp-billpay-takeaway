@@ -56,6 +56,7 @@ import { BulkConfirmDialog } from '@/app/_components/molecules/bulk-confirm-dial
 import { NoteDialog } from '@/app/_components/molecules/note-dialog';
 
 import { BillTransitionDialog } from './bill-transition-dialog';
+import { BillDetailDialog } from './bill-detail-dialog';
 import { BillsStatusOverview } from './bills-status-overview';
 import { BillsTable } from './bills-table';
 import {
@@ -107,6 +108,7 @@ export function BillsWorkspace({
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
+  const [selectedBill, setSelectedBill] = useState<BillListItem | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const transitions = useBillTransitions({
@@ -160,6 +162,14 @@ export function BillsWorkspace({
     setDeleteCandidateId(id);
   }, []);
 
+  const selectBillForDetails = useCallback((bill: BillListItem) => {
+    setSelectedBill(bill);
+  }, []);
+
+  const closeBillDetails = useCallback(() => {
+    setSelectedBill(null);
+  }, []);
+
   const onSubmit = useCallback((input: CreateBillInput) => {
     setFormError(null);
 
@@ -208,7 +218,7 @@ export function BillsWorkspace({
 
   const draftColumns = [
     selectionColumn(draftSelection),
-    ...billReadColumns,
+    ...billReadColumns({ onViewDetails: selectBillForDetails }),
     draftActionsColumn({
       deleteCandidateId,
       onCancelDelete: cancelDelete,
@@ -220,7 +230,7 @@ export function BillsWorkspace({
   ];
   const approvalColumns = [
     selectionColumn(approvalSelection),
-    ...billReadColumns,
+    ...billReadColumns({ onViewDetails: selectBillForDetails }),
     approvalActionsColumn({
       onApprove: transitions.requestApprove,
       onReject: transitions.requestReject,
@@ -228,10 +238,10 @@ export function BillsWorkspace({
     }),
   ];
   const paymentColumns = [
-    ...billReadColumns,
+    ...billReadColumns({ onViewDetails: selectBillForDetails }),
     billRowActionsColumn({ onArchive: transitions.requestArchive }),
   ];
-  const historyColumns = billReadColumns;
+  const historyColumns = billReadColumns({ onViewDetails: selectBillForDetails });
 
   const initialHiddenColumns = savedPreferences?.hiddenColumns ?? [];
   const draftVisibility = useColumnVisibility(
@@ -474,7 +484,7 @@ export function BillsWorkspace({
       ) : null}
 
       {activeTab === 'overview' ? (
-        <BillsStatusOverview groups={overviewGroups} />
+        <BillsStatusOverview groups={overviewGroups} onViewDetails={selectBillForDetails} />
       ) : null}
       {activeTab === 'drafts' ? (
         <div>
@@ -570,6 +580,10 @@ export function BillsWorkspace({
       ) : null}
 
       <BillTransitionDialog isPending={isPending} transitions={transitions} />
+
+      {selectedBill ? (
+        <BillDetailDialog bill={selectedBill} onClose={closeBillDetails} />
+      ) : null}
 
       {transitions.archiveCandidate ? (
         <BulkConfirmDialog

@@ -41,6 +41,7 @@ import { PaymentFilterBar } from './filters/payment-filter-bar';
 import { usePaymentBulkActions } from './hooks/use-payment-bulk-actions';
 import { usePaymentFilters } from './hooks/use-payment-filters';
 import { usePaymentTransitions } from './hooks/use-payment-transitions';
+import { PaymentDetailDialog } from './payment-detail-dialog';
 import { PaymentTransitionDialog } from './payment-transition-dialog';
 import { PaymentsTable } from './payments-table';
 import {
@@ -89,6 +90,7 @@ export function PaymentsWorkspace({
   const router = useRouter();
   const filtersController = usePaymentFilters();
   const [actionError, setActionError] = useState<string | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentListItem | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const transitions = usePaymentTransitions({
@@ -114,9 +116,17 @@ export function PaymentsWorkspace({
   const processingSelection = useTableSelection(activeTab === 'processing' ? activeIds : []);
   const historySelection = useTableSelection(activeTab === 'history' ? activeIds : []);
 
+  const selectPaymentForDetails = useCallback((payment: PaymentListItem) => {
+    setSelectedPayment(payment);
+  }, []);
+
+  const closePaymentDetails = useCallback(() => {
+    setSelectedPayment(null);
+  }, []);
+
   const upcomingColumns = [
     selectionColumn(upcomingSelection),
-    ...paymentReadColumns,
+    ...paymentReadColumns({ onViewDetails: selectPaymentForDetails }),
     upcomingActionsColumn({
       onInitiate: transitions.initiate,
       onCancel: transitions.requestCancel,
@@ -124,7 +134,7 @@ export function PaymentsWorkspace({
   ];
   const processingColumns = [
     selectionColumn(processingSelection),
-    ...paymentReadColumns,
+    ...paymentReadColumns({ onViewDetails: selectPaymentForDetails }),
     processingActionsColumn({
       onMarkPaid: transitions.requestMarkPaid,
       onMarkFailed: transitions.requestMarkFailed,
@@ -132,7 +142,7 @@ export function PaymentsWorkspace({
   ];
   const historyColumns = [
     selectionColumn(historySelection),
-    ...paymentReadColumns,
+    ...paymentReadColumns({ onViewDetails: selectPaymentForDetails }),
     historyActionsColumn({
       onRetry: transitions.retry,
     }),
@@ -391,6 +401,10 @@ export function PaymentsWorkspace({
       ) : null}
 
       <PaymentTransitionDialog isPending={isPending} transitions={transitions} />
+
+      {selectedPayment ? (
+        <PaymentDetailDialog onClose={closePaymentDetails} payment={selectedPayment} />
+      ) : null}
 
       {bulk.pending?.kind === 'cancel' ? (
         <NoteDialog
