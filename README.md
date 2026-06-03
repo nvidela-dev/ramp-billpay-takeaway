@@ -2,7 +2,7 @@
 
 A bill-pay workspace for small finance and AP teams, covering the invoice-to-payment lifecycle in a single tool: enter bills, route them for approval, schedule and track payments, and export filtered reports.
 
-Built as a take-home MVP. Highlights: role-based access, explicit bill and payment lifecycles, bulk operations, configurable table views, and filtered CSV exports.
+Built as a take-home MVP. Highlights: explicit bill and payment lifecycles, bulk operations, configurable table views, and filtered CSV exports.
 
 ## Demo
 
