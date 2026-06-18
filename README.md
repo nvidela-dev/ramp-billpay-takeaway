@@ -3,6 +3,11 @@
 An accounts-payable workspace: AP teams capture bills, route them for approval,
 schedule and execute payments, and keep an auditable trail of every step.
 
+## Demo
+
+- [Hosted app](https://silver-take-away.vercel.app/)
+- [Walkthrough](https://www.loom.com/share/2cc114fe9aa940fbb15d8723df4b9a7f)
+
 ## What the product does
 
 The app is organized around two workspaces — **Bills** and **Payments** — each a
