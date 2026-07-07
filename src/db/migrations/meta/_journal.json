@@ -50,6 +50,13 @@
       "when": 1781251200000,
       "tag": "0006_mock_users",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783464000000,
+      "tag": "0007_invoice_documents",
+      "breakpoints": true
     }
   ]
 }

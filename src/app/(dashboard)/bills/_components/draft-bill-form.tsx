@@ -1,4 +1,5 @@
 import {
+  FileScan,
   Save,
   X,
 } from 'lucide-react';
@@ -18,9 +19,14 @@ import { useDraftBillForm } from './hooks/use-draft-bill-form';
 interface DraftBillFormProps {
   editingBill: BillListItem | null;
   formError: string | null;
+  importWarnings: string[];
+  importedBillInput: CreateBillInput | null;
+  importError: string | null;
+  isImporting: boolean;
   isPending: boolean;
   loadError: string | null;
   onCancelEdit: () => void;
+  onImportInvoice: (file: File) => void;
   onSubmit: (input: CreateBillInput) => void;
   options: BillFormOptions;
 }
@@ -39,9 +45,14 @@ function FieldError({ message = undefined }: { message?: string }): React.ReactE
 export function DraftBillForm({
   editingBill,
   formError,
+  importWarnings,
+  importedBillInput,
+  importError,
+  isImporting,
   isPending,
   loadError,
   onCancelEdit,
+  onImportInvoice,
   onSubmit,
   options,
 }: DraftBillFormProps): React.ReactElement {
@@ -61,7 +72,7 @@ export function DraftBillForm({
     submitDraftBill,
     totalsMatch,
     currency,
-  } = useDraftBillForm({ editingBill, onSubmit });
+  } = useDraftBillForm({ editingBill, importedBillInput, onSubmit });
 
   const { errors } = formState;
   const lineItemsRootError = typeof errors.lineItems?.message === 'string'
@@ -94,6 +105,46 @@ export function DraftBillForm({
           noValidate
           onSubmit={handleSubmit(submitDraftBill)}
         >
+          {!editingBill ? (
+            <div className="grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+              <label
+                className="grid gap-1 text-sm font-medium text-slate-700"
+                htmlFor="bill-invoice-import"
+              >
+                Import invoice image
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    accept="image/jpeg,image/png"
+                    className="max-w-md bg-white"
+                    disabled={isImporting || isPending}
+                    id="bill-invoice-import"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) {
+                        onImportInvoice(file);
+                      }
+                    }}
+                    type="file"
+                  />
+                  <span
+                    className="inline-flex items-center gap-2 text-xs font-normal text-slate-500"
+                  >
+                    <FileScan aria-hidden className="size-4" />
+                    {isImporting ? 'Parsing invoice...' : 'JPG or PNG'}
+                  </span>
+                </div>
+              </label>
+              {importError ? (
+                <p className="text-sm text-rose-700" role="alert">{importError}</p>
+              ) : null}
+              {importWarnings.length > 0 ? (
+                <Alert tone="warning">
+                  {importWarnings.join(' ')}
+                </Alert>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="grid gap-3 md:grid-cols-3">
             <label
               className="grid gap-1 text-sm font-medium text-slate-700"

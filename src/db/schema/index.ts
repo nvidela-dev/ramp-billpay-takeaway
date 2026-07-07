@@ -8,3 +8,4 @@ export * from './bill-line-items';
 export * from './payments';
 export * from './bill-activity-log';
 export * from './payment-activity-log';
+export * from './invoice-documents';

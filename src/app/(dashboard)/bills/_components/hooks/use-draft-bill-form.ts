@@ -33,6 +33,7 @@ import type { BillListItem } from '@/lib/types/bill/views';
 
 interface UseDraftBillFormOptions {
   editingBill: BillListItem | null;
+  importedBillInput: CreateBillInput | null;
   onSubmit: (input: CreateBillInput) => void;
 }
 
@@ -91,8 +92,27 @@ function draftBillToFormValues(bill: BillListItem): DraftBillFormInput {
   };
 }
 
+function createBillInputToFormValues(input: CreateBillInput): DraftBillFormInput {
+  return {
+    vendorId: input.vendorId,
+    invoiceNumber: input.invoiceNumber ?? '',
+    invoiceDate: input.invoiceDate ?? '',
+    dueDate: input.dueDate ?? '',
+    amount: input.amount,
+    currency: input.currency ?? 'USD',
+    description: input.description ?? '',
+    invoiceUrl: input.invoiceUrl ?? '',
+    lineItems: input.lineItems.map((lineItem) => ({
+      description: lineItem.description ?? '',
+      amount: lineItem.amount,
+      categoryId: lineItem.categoryId ?? '',
+    })),
+  };
+}
+
 export function useDraftBillForm({
   editingBill,
+  importedBillInput,
   onSubmit,
 }: UseDraftBillFormOptions): UseDraftBillFormController {
   const form = useForm<DraftBillFormInput, unknown, DraftBillFormValues>({
@@ -163,6 +183,12 @@ export function useDraftBillForm({
         ? draftBillToFormValues(editingBill) : createDefaultDraftBillFormValues(),
     );
   }, [editingBill, reset]);
+
+  useEffect(() => {
+    if (!editingBill && importedBillInput) {
+      reset(createBillInputToFormValues(importedBillInput));
+    }
+  }, [editingBill, importedBillInput, reset]);
 
   const appendLineItem = useCallback(() => {
     append({ ...emptyDraftBillLineItem });

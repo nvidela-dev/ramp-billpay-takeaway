@@ -32,6 +32,7 @@ import { SurfaceTabs } from '@/app/_components/molecules/surface-tabs';
 import { notify } from '@/app/_components/feedback/notify';
 import { createBill } from '@/lib/actions/bills/create-bill';
 import { deleteBill } from '@/lib/actions/bills/delete-bill';
+import { parseInvoiceDocument } from '@/lib/actions/bills/parse-invoice-document';
 import { updateBill } from '@/lib/actions/bills/update-bill';
 import { billTabs } from '@/app/_navigation';
 import type { CreateBillInput } from '@/lib/types/bill/inputs';
@@ -107,9 +108,13 @@ export function BillsWorkspace({
   const [editingBillId, setEditingBillId] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importWarnings, setImportWarnings] = useState<string[]>([]);
+  const [importedBillInput, setImportedBillInput] = useState<CreateBillInput | null>(null);
   const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
   const [selectedBill, setSelectedBill] = useState<BillListItem | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isImporting, startImportTransition] = useTransition();
 
   const transitions = useBillTransitions({
     startTransition,
@@ -140,17 +145,26 @@ export function BillsWorkspace({
     setEditingBillId(null);
     setIsFormOpen(false);
     setFormError(null);
+    setImportError(null);
+    setImportWarnings([]);
+    setImportedBillInput(null);
   }, []);
 
   const openCreateForm = useCallback(() => {
     setEditingBillId(null);
     setFormError(null);
+    setImportError(null);
+    setImportWarnings([]);
+    setImportedBillInput(null);
     setIsFormOpen(true);
   }, []);
 
   const selectBillForEdit = useCallback((bill: BillListItem) => {
     setEditingBillId(bill.id);
     setFormError(null);
+    setImportError(null);
+    setImportWarnings([]);
+    setImportedBillInput(null);
     setIsFormOpen(true);
   }, []);
 
@@ -191,6 +205,24 @@ export function BillsWorkspace({
       router.refresh();
     });
   }, [closeForm, editingBill, router, startTransition]);
+
+  const onImportInvoice = useCallback((file: File) => {
+    setImportError(null);
+    setImportWarnings([]);
+
+    startImportTransition(async () => {
+      const result = await parseInvoiceDocument(file);
+
+      if (!result.ok) {
+        setImportError(result.error.message);
+        return;
+      }
+
+      setImportedBillInput(result.data.data);
+      setImportWarnings(result.data.warnings ?? []);
+      notify.success('Invoice parsed');
+    });
+  }, [startImportTransition]);
 
   const onDelete = useCallback((id: string) => {
     startTransition(async () => {
@@ -463,9 +495,14 @@ export function BillsWorkspace({
               <DraftBillForm
                 editingBill={editingBill}
                 formError={formError}
+                importError={importError}
+                importedBillInput={importedBillInput}
+                importWarnings={importWarnings}
+                isImporting={isImporting}
                 isPending={isPending}
                 loadError={loadError}
                 onCancelEdit={closeForm}
+                onImportInvoice={onImportInvoice}
                 onSubmit={onSubmit}
                 options={{
                   categories: referenceData.categories,
